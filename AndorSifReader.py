@@ -1,7 +1,7 @@
 import numpy as np
 from ctypes import WinDLL, c_int, c_float, c_char_p, byref, POINTER, c_uint, \
     create_string_buffer, c_double, c_uint32
-
+import os
 
 class SifError:
     """
@@ -233,7 +233,7 @@ class AndorSifFile():
         c_double_p = POINTER(c_double)
 
         self._filename = filename
-        self.dll = WinDLL(r"ATSIFIO64.dll")
+        self.dll = WinDLL(os.path.join(os.path.dirname(__file__), 'ATSIFIO64.dll'))
 
         # Define library functions
         self.dll.ATSIF_SetFileAccessMode.argtypes = [c_int]

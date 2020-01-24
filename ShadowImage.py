@@ -31,7 +31,7 @@ class ShadowImage(object):
     """
     def __init__(self, filePath):
         self.filePath = filePath
-        self.ext = os.splitext(filePath)[1]
+        self.ext = os.path.splitext(filePath)[1]
         if self.ext == '.tif':
             self.im = Image.open(filePath)
             self.tags = self.im.tag.named()
@@ -91,8 +91,8 @@ class ShadowImage(object):
         """
         self.nAveraging = nAveraging
         self.nSamples = int(self.n/nAveraging)
-        result = np.zeros((self.nSamples, self.im.height, self.im.height))
-        ShadowImage.opticalDepth(self, [0, self.im.height], [0, self.im.height])
+        result = np.zeros((self.nSamples, self.im.height, self.im.width))
+        ShadowImage.opticalDepth(self, [0, self.im.width], [0, self.im.height])
         for j in range(self.nSamples):
             for i in range(self.nAveraging):
                 result[j] += self.OD[self.nSamples*i+j]
@@ -108,8 +108,8 @@ class ShadowImage(object):
         """
         self.nAveraging = nAveraging
         self.nSamples = int(self.n/nAveraging)
-        self.averagedTransmission = np.zeros((self.nSamples, self.im.height, self.im.height))
-        self.averagedIncidence = np.zeros((self.nSamples, self.im.height, self.im.height))
+        self.averagedTransmission = np.zeros((self.nSamples, self.im.height, self.im.width))
+        self.averagedIncidence = np.zeros((self.nSamples, self.im.height, self.im.width))
         ShadowImage.opticalDepth(self, [0, self.im.height], [0, self.im.height])
         for j in range(self.nSamples):
             for i in range(self.nAveraging):
@@ -130,8 +130,8 @@ class ShadowImage(object):
         """
         self.nAveraging = nAveraging
         self.nSamples = int(self.n/nAveraging)
-        self.averagedTransmission2 = np.zeros((self.nSamples, self.im.height, self.im.height))
-        self.averagedIncidence2 = np.zeros((self.nSamples, self.im.height, self.im.height))
+        self.averagedTransmission2 = np.zeros((self.nSamples, self.im.height, self.im.width))
+        self.averagedIncidence2 = np.zeros((self.nSamples, self.im.height, self.im.width))
         ShadowImage.opticalDepth(self, [0, self.im.height], [0, self.im.height])
         for j in range(self.nSamples):
             for i in range(self.nAveraging):
