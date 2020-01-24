@@ -2,7 +2,7 @@ from scipy.constants import *
 import math
 
 def sigmaBlue(delta, A, s=0):
-    '''
+    """
     Calculates the scattering cross-section of Sr for 1^S_0--->1^P_1 taking into
     account the isotope shift w.r.t. A=88 isotope and hyperfine levels present
     in the excited state.
@@ -15,7 +15,7 @@ def sigmaBlue(delta, A, s=0):
         A float, Scattering cross-section.
     Comment:
         All frequencies are in MHz.
-    '''
+    """
     wLen = 461*nano
     Gamma = 2*pi*32*math.sqrt(1+s)
     sigma_0 = 3*wLen**2/(2*pi)
@@ -39,9 +39,18 @@ def sigmaBlue(delta, A, s=0):
 
 
 def sigmaRed(delta, s=0):
-    '''
-    delta in kHz.
-    '''
+    """
+    Calculates the scattering cross-section of Sr for 1^S_0--->3^P_1 taking saturation
+    into account.
+
+    Parameters:
+        delta: float, detuning of the probe w.r.t the reference in kHz.
+        s: float, saturation parameter of the probe, I/I_s.
+    Returns:
+        A float, Scattering cross-section.
+    Comment:
+        All frequencies are in kHz.
+    """
     wLen = 689*nano
     Gamma = 2*pi*7.5*math.sqrt(1+s)
     sigma_0 = 3*wLen**2/(2*pi)

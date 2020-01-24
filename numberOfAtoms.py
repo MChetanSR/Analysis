@@ -1,7 +1,7 @@
 import numpy as np
 from scipy import integrate
 from .sigma import sigmaBlue, sigmaRed
-from .gaussianFits import gaussian2DFit
+from .fits import gaussian2DFit
 from scipy.constants import *
 
 def numAtomsBlue(image, delta, imaging_params, s=0, plot=True):
@@ -16,11 +16,10 @@ def numAtomsBlue(image, delta, imaging_params, s=0, plot=True):
         plot(optional): a bool, flag to plot the gaussian fits if True.
             Default is True.
     Returns:
-        (number of atoms from 2D gaussian fit,
+        a tuple: (number of atoms from 2D gaussian fit,
          number of atoms from pixel sum, sigma_x, sigma_y, amplitude, x0, y0)
     '''
     scat = sigmaBlue(delta, 87, s)
-    ySpan, xSpan = [0, image.shape[0]], [0, image.shape[1]]
     pOpt, pCov = gaussian2DFit(image, p0=None, bounds=None, plot=plot)
     amp, xo, yo, sigma_x, sigma_y, theta, offset = pOpt
     pixelSize = imaging_params['pixelSize']
@@ -33,7 +32,7 @@ def numAtomsBlue(image, delta, imaging_params, s=0, plot=True):
 
 
 def numAtomsRed(image, delta, cgSquare, imaging_params, s=0, plot=True):
-    '''
+    """
     Calculates number of atoms from red shadow imaging.
     Parameters:
         image: a numpy.ndarray, OD from the experiment
@@ -45,11 +44,10 @@ def numAtomsRed(image, delta, cgSquare, imaging_params, s=0, plot=True):
         plot(optional): a bool, a flag to plot the gaussian fits if True.
             Default is True.
     Returns:
-        (number of atoms from 2D gaussian fit,
+        a tuple: (number of atoms from 2D gaussian fit,
          number of atoms from pixel sum, sigma_x, sigma_y, amplitude, x0, y0)
-    '''
+    """
     scat = sigmaRed(delta, s)*cgSquare
-    ySpan, xSpan = [0, image.shape[0]], [0, image.shape[1]]
     pOpt, pCov = gaussian2DFit(image, p0=None, bounds=None, plot=plot)
     amp, xo, yo, sigma_x, sigma_y, theta, offset = pOpt
     pixelSize = imaging_params['pixelSize']

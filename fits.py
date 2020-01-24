@@ -9,6 +9,19 @@ def gaussian(x, amplitude, xo, sigma, offset):
 
 
 def gaussianFit(array, p0=None, bounds=None, plot=True):
+    """
+    Fits the given array to an 1D-gaussian.
+    Parameters:
+        array: 1darray, the data to fit to the gaussian
+        p0: ndarray, initial guess for the fit params in the form of
+            [amplitude, xo, sigma, offset]. Default is None.
+        bounds: tuple of lower bound and upper bound for the fit.
+            Default is None.
+    Returns:
+        pOpt: optimized parameters in the same order as p0
+        pCov: covarience parameters of the fit.
+        Read scipy.optimize.curve_fit for details.
+    """
     x = np.arange(0,len(array))
     pOpt, pCov = curve_fit(gaussian, x, array, p0, bounds)
     if plot==True:
@@ -27,21 +40,21 @@ def gaussian2D(X, amplitude, xo, yo, sigma_x, sigma_y, theta, offset):
 
 
 def gaussian2DFit(image, p0=None, bounds=None, plot=True):
-    '''
+    """
     Fits an image with a 2D gaussian.
     Parameters:
         image: numpy ndarray
-        plot:  bool to show the plot of the fit. Default True.
         p0: ndarray, initial guess for the fit params in the form of
             [amplitude, xo, yo, sigma_x, sigma_y, theta, offset].
             Default None (fits for OD images).
         bounds: tuple of lower bound and upper bound for the fit.
-                Default None (fits for OD images)
+            Default None (fits for OD images)
+        plot:  bool to show the plot of the fit. Default True.
     Returns:
         pOpt: optimized parameters in the same order as p0
         pCov: covarience parameters of the fit.
         Read scipy.optimize.curve_fit for details.
-    '''
+    """
     Ny, Nx = image.shape
     x = np.linspace(0, Nx, Nx, endpoint=False)
     y = np.linspace(0, Ny, Ny, endpoint=False)
@@ -70,3 +83,28 @@ def gaussian2DFit(image, p0=None, bounds=None, plot=True):
         f.colorbar(matrix)
         plt.tight_layout()
     return pOpt, pCov
+
+def lorentzian(x, amplitude, xo, gamma, offset):
+    l = offset + amplitude/((x-xo)**2+(gamma/2)**2)
+    return l
+
+
+def lorentzianFit(array, p0=None, bounds=None, plot=True):
+    """
+    Fits the given array to a Lorentzian.
+    Parameters:
+        array: 1darray, the data to fit to the lorentzian
+        p0: ndarray, initial guess for the fit params in the form of
+            [amplitude, xo, gamma, offset]. Default is None.
+        bounds: tuple of lower bound and upper bound for the fit.
+            Default is None.
+    Returns:
+        pOpt: optimized parameters in the same order as p0
+        pCov: covarience parameters of the fit.
+        Read scipy.optimize.curve_fit for details.
+    """
+    x = np.arange(0, len(array))
+    pOpt, pCov = curve_fit(lorentzian, x, array, p0, bounds)
+    if plot==True:
+        pass
+    return pOpt,pCov

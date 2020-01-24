@@ -12,22 +12,22 @@ class ShadowImage(object):
     consists of the shadow or the absorption image, image of the incident probe
     and the image of the background for as many runs of the experiment.
     Parameters:
-        filePath: Path to the multiple-image file
+        filePath: str, Path to the multiple-image file
     Attributes:
-        filePath = file path of the tiff image file
-        im = PIL.TiffImagePlugin.TiffImageFile or AndorSifFile
-        n = total number of data = number of images/3
-        frames = all the frames in the image file
-        tags = the named tag dictionary of the TiffImage
-        transmission = All the transmission images after
-                       subtracting the background as an ndarray
-        incidence = All the images of incident probe after
-                    subtracting the background as an ndarray
-        OD = optical depth all the runs of the experiment calculated from
+        filePath: str, Path to the multiple-image file
+        im: PIL.TiffImagePlugin.TiffImageFile or AndorSifFile._SifFrames
+        n: int, total number of data = number of images/3
+        frames: ndarray, all the frames in the image file
+        tags: dict, the named tag dictionary of the TiffImage or properties of sif file
+        transmission: ndarray, All the transmission images after
+                       subtracting the background
+        incidence: ndarray, All the images of incident probe after
+                    subtracting the background
+        OD: ndarray, optical depth all the runs of the experiment calculated from
              the transmission and incidence
-        ODaveraged = OD averaged with averaging like a superloop
-        averagedOD = OD of the averaged signal with averaging on superloop
-        averagedOD2 = OD of the averaged signal with averaging on loop
+        ODaveraged: ndarray, OD averaged with averaging like a superloop
+        averagedOD: ndarray, OD of the averaged signal with averaging on superloop
+        averagedOD2: ndarray, OD of the averaged signal with averaging on loop
     """
     def __init__(self, filePath):
         self.filePath = filePath

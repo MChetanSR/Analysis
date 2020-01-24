@@ -83,6 +83,7 @@ class AndorSifFile():
     This is main class to handle the reading of sif files. All the work is
     done in the constructor, the sif file is opened, data is read and the file
     is closed.
+
     Parameters:
         filename: str, Path to .sif file to read
     Attributes:
@@ -302,12 +303,15 @@ class _SifFrames:
     This is helper class to store single image/spectrum together with all the
     properties and calibration. The creation of this class is always through
     :class:`AndorSifFile`.
+
     Parameters:
         sif: :class:`AndorSifFile`, Reference to :class:`AndorSifFile`
         source: int, Andor code for signal/background/reference.
     Attributes:
         props: dict, Contain all the properties of the measurement
-    data: ndarray, The data array to contain image/spectrum.
+        data: ndarray, The data array to contain image/spectrum.
+        n_frames: int, number of frames of the data (and other redundant attributes)
+
     """
 
     def __init__(self, sif, source):
