@@ -6,14 +6,16 @@ from .AndorSifReader import AndorSifFile
 
 
 class ShadowImage(object):
-    '''
+    """
     The main class to extract relavent information from the shadow image
     sequences that are obtained in the experiment. The multiple image sequence
     consists of the shadow or the absorption image, image of the incident probe
     and the image of the background for as many runs of the experiment.
+    Parameters:
+        filePath: Path to the multiple-image file
     Attributes:
         filePath = file path of the tiff image file
-        im = PIL.TiffImagePlugin.TiffImageFile
+        im = PIL.TiffImagePlugin.TiffImageFile or AndorSifFile
         n = total number of data = number of images/3
         frames = all the frames in the image file
         tags = the named tag dictionary of the TiffImage
@@ -26,7 +28,7 @@ class ShadowImage(object):
         ODaveraged = OD averaged with averaging like a superloop
         averagedOD = OD of the averaged signal with averaging on superloop
         averagedOD2 = OD of the averaged signal with averaging on loop
-    '''
+    """
     def __init__(self, filePath):
         self.filePath = filePath
         self.ext = os.splitext(filePath)[1]
@@ -44,10 +46,11 @@ class ShadowImage(object):
         self.n = self.im.n_frames//3
         self.frames = self.images()
 
+
     def images(self):
-        '''
+        """
         Returns the images present in the ShadowImage object as an ndarray.
-        '''
+        """
         if self.ext == '.tif':
             frames = np.zeros((self.im.n_frames, self.im.height, self.im.width))
             for i in range(self.im.n_frames):
@@ -58,11 +61,11 @@ class ShadowImage(object):
         return frames
 
     def opticalDepth(self, xSpan, ySpan):
-        '''
+        """
         Returns the optical depth calculated from the ShadowImage as an ndarray.
         xSpan: a list containing the range of pixels of the image in x direction.
         ySpan: a list containing the range of pixels of the image in y direction.
-        '''
+        """
         self.transmission = np.zeros((self.n, self.im.height, self.im.width))
         self.incidence = np.zeros((self.n, self.im.height, self.im.width))
         for i in range(self.n):
@@ -81,11 +84,11 @@ class ShadowImage(object):
         return self.OD
 
     def opticalDepthAveraged(self, nAveraging):
-        '''
+        """
         Calculates the optical depth from every triad of the images and
         averages it with nAveraging as the Superloop in the experiment.
         Returns an ndarray of length equal to Serie in the experiment.
-        '''
+        """
         self.nAveraging = nAveraging
         self.nSamples = int(self.n/nAveraging)
         result = np.zeros((self.nSamples, self.im.height, self.im.height))
@@ -98,11 +101,11 @@ class ShadowImage(object):
         return self.ODaveraged
 
     def averagedSignalOD(self, nAveraging):
-        '''
+        """
         Calculates the average signal with nAveraging being the Superloop
         in the experiment and finds the optical depth after the averaging.
         Returns an ndarray of length equal to Serie in the experiment.
-        '''
+        """
         self.nAveraging = nAveraging
         self.nSamples = int(self.n/nAveraging)
         self.averagedTransmission = np.zeros((self.nSamples, self.im.height, self.im.height))
@@ -120,11 +123,11 @@ class ShadowImage(object):
         return self.averagedOD
 
     def averagedSignalOD2(self, nAveraging):
-        '''
+        """
         Calculates the average signal with nAveraging being the loops
         in the experiment and finds the optical depth after the averaging.
         Returns an ndarray of length equal to Serie in the experiment.
-        '''
+        """
         self.nAveraging = nAveraging
         self.nSamples = int(self.n/nAveraging)
         self.averagedTransmission2 = np.zeros((self.nSamples, self.im.height, self.im.height))

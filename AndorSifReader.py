@@ -79,29 +79,17 @@ class SifError:
 # ------------------------------------------------------------------------------
 
 class AndorSifFile():
-    """This is main class to handle the reading of sif files. All the work is
+    """
+    This is main class to handle the reading of sif files. All the work is
     done in the constructor, the sif file is opened, data is read and the file
     is closed.
-
-    Parameters
-    ----------
-    filename : str
-        Path to .sif file to read
-
-    Attributes
-    ----------
-    signal : :class:`_SifFrame`
-        Instance of the :class:`_SifFrame` helper class to store signal information.
-    bg : :class:`_SifFrame`
-        Instance of the :class:`_SifFrame` helper class to store background information.
-    wls : ndarray of floats
-        Convenience property linking to signal.wls.
-    data : ndarray of floats
-        Convenience property linking to signal.data.
-    props : dict
-        Convenience property linking to signal.props.
-    expTime : float
-        Total exposure time in seconds of the signal channel.
+    Parameters:
+        filename: str, Path to .sif file to read
+    Attributes:
+        signal : :class:`_SifFrame`
+            Instance of the :class:`_SifFrame` helper class to store signal information.
+        data : ndarray, Convenience property linking to signal.data.
+        props : dict, Convenience property linking to signal.props.
     """
 
     # Read mode
@@ -262,9 +250,6 @@ class AndorSifFile():
         self.dll.ATSIF_GetPropertyType.argtypes = [c_int, c_char_p, c_int_p]
         self.dll.ATSIF_GetPropertyType.restype = c_uint
 
-        self.dll.ATSIF_GetPixelCalibration.argtypes = [c_int, c_int, c_int, c_double_p]
-        self.dll.ATSIF_GetPixelCalibration.restype = c_uint
-
         self.dll.ATSIF_GetFrameSize.argtypes = [c_int, c_uint_p]
         self.dll.ATSIF_GetFrameSize.restype = c_uint
 
@@ -277,7 +262,6 @@ class AndorSifFile():
         # Read contents
         try:
             self.signal = _SifFrames(self, self.ATSIF_Signal)
-            # self.bg = _SifFrame(self, self.ATSIF_Background)
         finally:
             self._Close()
 
@@ -318,21 +302,12 @@ class _SifFrames:
     This is helper class to store single image/spectrum together with all the
     properties and calibration. The creation of this class is always through
     :class:`AndorSifFile`.
-
-    Parameters
-    ----------
-    sif : :class:`AndorSifFile`
-        Reference to :class:`AndorSifFile`
-    source : int
-        Andor code for signal/background/reference.
-
-    Attributes
-    ----------
-    props : dict
-        Contain all the properties of the measurement (e.g exposure time, etc)
-    data: ndarray of floats
-        The data array to contain image/spectrum.
-
+    Parameters:
+        sif: :class:`AndorSifFile`, Reference to :class:`AndorSifFile`
+        source: int, Andor code for signal/background/reference.
+    Attributes:
+        props: dict, Contain all the properties of the measurement
+    data: ndarray, The data array to contain image/spectrum.
     """
 
     def __init__(self, sif, source):
