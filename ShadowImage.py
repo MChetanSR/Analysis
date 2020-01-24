@@ -1,6 +1,9 @@
 import os
 import numpy as np
 from PIL import Image
+from warnings import warn
+from .AndorSifReader import AndorSifFile
+
 
 class ShadowImage(object):
     '''
@@ -26,22 +29,32 @@ class ShadowImage(object):
     '''
     def __init__(self, filePath):
         self.filePath = filePath
-        self.im = Image.open(filePath)
+        self.ext = os.splitext(filePath)[1]
+        if self.ext == '.tif':
+            self.im = Image.open(filePath)
+            self.tags = self.im.tag.named()
+        elif self.ext == '.sif':
+            self.im = AndorSifFile(filePath).signal
+            self.tags = self.im.props
+        else:
+            raise IOError('Invalid file!')
         if (self.im.n_frames%3!=0):
             warn('Not a valid shadow image. \
                   No. of images in the file is not a multiple of 3.')
         self.n = self.im.n_frames//3
-        self.frames = ShadowImage.images(self)
-        self.tags = self.im.tag.named()
+        self.frames = self.images()
 
     def images(self):
         '''
         Returns the images present in the ShadowImage object as an ndarray.
         '''
-        frames=np.zeros((self.im.n_frames, self.im.height, self.im.width))
-        for i in range(self.im.n_frames):
-            self.im.seek(i)
-            frames[i] = np.array(self.im)
+        if self.ext == '.tif':
+            frames = np.zeros((self.im.n_frames, self.im.height, self.im.width))
+            for i in range(self.im.n_frames):
+                self.im.seek(i)
+                frames[i] = np.array(self.im)
+        elif self.ext == '.sif':
+            frames = self.im.data
         return frames
 
     def opticalDepth(self, xSpan, ySpan):
@@ -127,27 +140,27 @@ class ShadowImage(object):
         T[T <= 0] = 1e-20
         self.averagedOD2 = -np.log(T)
         return self.averagedOD2
-
+    '''
     def comment(self, comment):
-        '''
-        Adds comment to the tiff image under the ImageDescription tag
+        """
+        Adds comment to the tif image under the ImageDescription tag
         and replaces it silently with the new image, if the user has the
         permissions.
-        '''
+        """
         path, ext = os.path.splitext(self.filePath)
         newPath = path+'cmtd'+ext
         self.im.save(newPath, save_all=True, description=str(comment))
         os.replace(newPath, self.filePath)
 
     def description(self):
-        '''
+        """
         Returns the ImageDescription tag of the tiff image file.
-        '''
+        """
         try:
             r = self.tags['ImageDescription']
         except KeyError:
             r = ''
         return r
-
+    '''
     def __str__(self):
         return str(self.tags)
