@@ -66,7 +66,7 @@ def gaussian2DFit(image, p0=None, bounds=None, plot=True):
     pOpt, pCov = curve_fit(gaussian2D, X, image.reshape((Nx*Ny)), p0, bounds=b)
     fit = gaussian2D(X, *pOpt).reshape(Ny, Nx)
     if plot==True:
-        f, ax = plt.subplots(nrows=1, ncols=3, figsize=(16,4))
+        f, ax = plt.subplots(nrows=1, ncols=5, gridspec_kw={'width_ratios': [4,4,4,4,0.2]}, figsize=(16, 4))
         ax[0].plot(image[int(pOpt[2])], 'r.')
         ax[0].plot(x, gaussian2D(np.meshgrid(x,int(pOpt[2])), *pOpt), 'k')
         ax[0].set_xlabel('x (pixels)')
@@ -76,11 +76,14 @@ def gaussian2DFit(image, p0=None, bounds=None, plot=True):
         ax[1].plot(y, gaussian2D(np.meshgrid(int(pOpt[1]),y), *pOpt), 'k')
         ax[1].set_xlabel('y (pixels)')
         ax[1].set_ylim(pOpt[6]-0.2, pOpt[6]+pOpt[0]+0.5)
-        ax[2].contour(X[0], X[1], fit, cmap=plt.cm.hot, vmin=-0.1, vmax=pOpt[0]+0.5)
-        matrix=ax[2].imshow(image, cmap=plt.cm.hot, vmin=-0.1, vmax=pOpt[0]+0.5)
+        ax[2].contour(X[0], X[1], fit, cmap=plt.cm.hot, vmin=pOpt[-1]-0.2, vmax=pOpt[0]+0.7)
+        matrix=ax[2].imshow(image, cmap=plt.cm.hot, vmin=pOpt[-1]-0.2, vmax=pOpt[0]+0.7)
         ax[2].set_xlabel('x (pixels)')
         ax[2].set_ylabel('y (pixels)')
-        f.colorbar(matrix)
+        ax[3].imshow(image-fit, cmap=plt.cm.hot, vmin=pOpt[-1]-0.2, vmax=pOpt[0]+0.7)
+        ax[3].set_xlabel('x (pixels)')
+        ax[3].set_ylabel('y (pixels)')
+        f.colorbar(matrix, cax=ax[4])
         plt.tight_layout()
     return pOpt, pCov
 
