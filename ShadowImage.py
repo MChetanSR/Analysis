@@ -165,5 +165,9 @@ class ShadowImage(object):
             r = ''
         return r
     '''
+    def spectrograph(self, fStart, fStep):
+        f = fStart+fStep*np.arange(self.n)
+
+
     def __str__(self):
         return str(self.tags)

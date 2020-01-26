@@ -92,7 +92,7 @@ def lorentzian(x, amplitude, xo, gamma, offset):
     return l
 
 
-def lorentzianFit(array, p0=None, bounds=None, plot=True):
+def lorentzianFit(x, array, p0=None, bounds=None, plot=True):
     """
     Fits the given array to a Lorentzian.
     Parameters:
@@ -106,7 +106,6 @@ def lorentzianFit(array, p0=None, bounds=None, plot=True):
         pCov: covarience parameters of the fit.
         Read scipy.optimize.curve_fit for details.
     """
-    x = np.arange(0, len(array))
     pOpt, pCov = curve_fit(lorentzian, x, array, p0, bounds)
     if plot==True:
         pass
