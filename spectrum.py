@@ -14,21 +14,22 @@ def centerOfOD(image):
         x += i * np.sum(image[:, i]) / m
     return int(x), int(y)
 
-def spectrograph(ODimages, fStart, fStep, d=4, plot=True):
+def spectroscopy(ODimages, f, d=4, plot=True):
     n = len(ODimages)
-    f = fStart + fStep * np.arange(n)
+    step = np.round(f[1]-f[0], 3)
     x, y = centerOfOD(ODimages[n//2])
     index = []
     for i in range(n):
         index.append(np.sum(np.sum(ODimages[i][y-d:y+d, x-d:x+d])))
-    pOpt, pCov = lorentzianFit(f, np.array(index), p0=[max(index), f[np.argmax(index)], 0.1, 0])
+    maxODAt = np.argmax(index)
+    pOpt, pCov = lorentzianFit(f, np.array(index), p0=[max(index), f[maxODAt], 0.1, 0])
     if plot==True:
         plt.figure()
-        plt.imshow(ODimages[n // 2])
+        plt.imshow(ODimages[maxODAt])
         plt.scatter(x, y, marker='+', color='r')
         plt.figure()
         plt.plot(f, index, 'ro')
         plt.plot(f, lorentzian(f, *pOpt), 'k', label='lor. fit')
         plt.legend()
-        plt.title(r'$f_{start}$ = '+str(fStart)+', $\delta f$ = '+str(fStep)+', $f_0$ = '+str(np.round(pOpt[1], 3)))
+        plt.title(r'$f_{start}$ = '+str(f[0])+', $\delta f$ = '+str(step)+', $f_0$ = '+str(np.round(pOpt[1], 3)))
     return pOpt
