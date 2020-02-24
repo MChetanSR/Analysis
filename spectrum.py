@@ -14,7 +14,7 @@ def centerOfOD(image):
         x += i * np.sum(image[:, i]) / m
     return int(x), int(y)
 
-def spectroscopy(ODimages, f, d=4, plot=True):
+def spectroscopy(ODimages, f, d=4, plot=True,fileNum='',savefig=False):
     n = len(ODimages)
     step = np.round(f[1]-f[0], 3)
     x, y = centerOfOD(ODimages[n//2])
@@ -31,5 +31,11 @@ def spectroscopy(ODimages, f, d=4, plot=True):
         plt.plot(f, index, 'ro')
         plt.plot(f, lorentzian(f, *pOpt), 'k', label='lor. fit')
         plt.legend()
-        plt.title(r'$f_{start}$ = '+str(f[0])+', $\delta f$ = '+str(step)+', $f_0$ = '+str(np.round(pOpt[1], 3)))
+        plt.ylabel('$\propto$ OD', fontsize=16)
+        plt.xlabel('$f_{9/2 \\rightarrow 11/2}$(in MHz)', fontsize=16)
+        plt.title(r'$f_{start}$ = '+str(f[0])+', $\delta f$ = '+str(step)+\
+                  ', $f_0$ = '+str(np.round(pOpt[1], 3))+', file = '+fileNum)
+        plt.tight_layout()
+        if savefig==True:
+            plt.savefig('SpectroscopyResultFor'+fileNum+'.png', transparent=True)
     return pOpt
