@@ -15,8 +15,23 @@ def centerOfOD(image):
         x += i * np.sum(image[:, i]) / m
     return int(x), int(y)
 
-def spectroscopy(ODimages, f, d=4, plot=True,fileNum='',savefig=False):
+
+def spectroscopy(ODimages, f, d=4, plot=True, fileNum='', savefig=False):
+    '''
+    Args:
+        ODimages: ODimages extracted from ShadowImaging sequences
+        f: array of frequencies for which the scan is done
+        d: int, to specify size of the image area to consider around the centre of OD
+        plot: bool, default is True to specify if the data has to be plotted
+        fileNum: string, the image file number for which the analysis is done
+        savefig: bool, default is False. Change it to true if you want to save the spectrum as .png
+
+    Returns:
+        pOpt = (amp, centre, gamma, offset) of the lorentzian fit
+    '''
     n = len(ODimages)
+    if n!=len(f):
+        raise ValueError('No of images and no. of  frequencies are not equal')
     step = np.round(f[1]-f[0], 3)
     x, y = centerOfOD(ODimages[n//2])
     index = []
@@ -26,21 +41,21 @@ def spectroscopy(ODimages, f, d=4, plot=True,fileNum='',savefig=False):
     try:
         pOpt, pCov = lorentzianFit(f, np.array(index), p0=[max(index), f[maxODAt], 0.1, 0])
     except RuntimeError:
-        pOpt = None
+        pOpt = []
 
     if plot == True:
-        f, ax = plt.subplots(nrows=1, ncols=2, figsize=(5,8))
+        fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(12,4))
         ax[0].imshow(ODimages[maxODAt])
         ax[0].scatter(x, y, marker='+', color='r')
         rectangle = patch.Rectangle((x-d, y-d), 2*d, 2*d, linewidth=1,edgecolor='r',facecolor='none')
         ax[0].add_patch(rectangle)
         ax[1].plot(f, index, 'ro')
-        if pOpt!=None:
-            ax[1].plot(f, lorentzian(f, *pOpt), 'k', label=r'lor. fit \n $\Gamma=$'+str(np.round(pOpt[2], 3))+
+        if pOpt!=[]:
+            ax[1].plot(f, lorentzian(f, *pOpt), 'k', label=r'lor. fit: $\Gamma=$'+str(np.round(pOpt[2], 3))+
                                                          ', $f_0$ = '+str(np.round(pOpt[1], 3)))
             ax[1].legend()
         ax[1].set_ylabel('$\propto$ OD', fontsize=16)
-        ax[1].set_xlabel('$f_{9/2 \\rightarrow 11/2}$(in MHz)', fontsize=16)
+        ax[1].set_xlabel('$f$(in MHz)', fontsize=16)
         ax[1].set_title(r'$f_{start}$ = '+str(f[0])+', $f_{step}$ = '+str(step)+', file = '+fileNum)
         plt.tight_layout()
         if savefig==True:
