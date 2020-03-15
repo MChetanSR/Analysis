@@ -87,8 +87,9 @@ def gaussian2DFit(image, p0=None, bounds=None, plot=True):
         plt.tight_layout()
     return pOpt, pCov
 
+
 def lorentzian(x, amplitude, xo, gamma, offset):
-    l = offset + amplitude/((x-xo)**2+(gamma/2)**2)
+    l = offset + amplitude*(gamma/2)/((x-xo)**2+(gamma/2)**2)
     return l
 
 
@@ -109,4 +110,17 @@ def lorentzianFit(x, array, p0=None, bounds=None, plot=True):
     pOpt, pCov = curve_fit(lorentzian, x, array, p0, bounds)
     if plot==True:
         pass
+    return pOpt,pCov
+
+
+def pVoigt(x, x0, s, g, a):
+    fg = 2*s*np.sqrt(2*np.log(2))
+    fl = 2*g/2
+    f = (fg**5+2.69269*fg**4*fl+2.42843*fg**3*fl**2+4.47163*fg**2*fl**3+0.07842*fg*fl**4+fl**5)**(1./5.)
+    eta =1.36603*(fl/f)-0.47719*(fl/f)**2+0.11116*(f/fl)**3
+    return a*(eta*cauchy(x, x0, f)+(1-eta)*gauss(x, x0, f))
+
+
+def pVoigtFit(x, array, p0=None, bounds=None, plot=True):
+    pOpt, pCov = curve_fit(pVoigt, x, array, p0, bounds)
     return pOpt,pCov
