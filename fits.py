@@ -3,6 +3,7 @@ from scipy.optimize import curve_fit
 from scipy.constants import *
 import matplotlib.pyplot as plt
 
+
 def gaussian(x, amplitude, xo, sigma, offset):
     g = offset + amplitude*np.exp(-(x-xo)**2/(2*sigma**2))
     return g

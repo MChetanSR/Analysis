@@ -18,6 +18,8 @@ def centerOfOD(image):
 
 def spectroscopy(ODimages, f, d=4, plot=True, fileNum='', savefig=False):
     '''
+    Adds the OD of the pixels around the centre and uses the sum to plot the spectrum of the scan
+    corresponding to the given frequencies
     Args:
         ODimages: ODimages extracted from ShadowImaging sequences
         f: array of frequencies for which the scan is done
@@ -45,7 +47,8 @@ def spectroscopy(ODimages, f, d=4, plot=True, fileNum='', savefig=False):
 
     if plot == True:
         fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(12,4))
-        ax[0].imshow(ODimages[maxODAt])
+        i = ax[0].imshow(ODimages[maxODAt])
+        fig.colorbar(i, ax=ax[0])
         ax[0].scatter(x, y, marker='+', color='r')
         rectangle = patch.Rectangle((x-d, y-d), 2*d, 2*d, linewidth=1,edgecolor='r',facecolor='none')
         ax[0].add_patch(rectangle)
