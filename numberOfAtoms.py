@@ -31,13 +31,12 @@ def numAtomsBlue(image, delta, imaging_params, s=0, plot=True):
     return NGaussian, NPixel, pOpt[3], pOpt[4], pOpt[0], pOpt[1], pOpt[2]
 
 
-def numAtomsRed(image, delta, cgSquare, imaging_params, s=0, plot=True):
+def numAtomsRed(image, delta, imaging_params, s=0, plot=True):
     """
     Calculates number of atoms from red shadow imaging.
     Parameters:
         image: a numpy.ndarray, OD from the experiment
         delta: float, detuning of the probe in kHz
-        cgSquare: a float, square of the Clebsch-Gordan coefficient for the transistion
         imaging_params: a dictionary with keys as follows
             ex: {'binning':2, 'magnification': 2.2, 'pixelSize': 16*micro }
         s(optional): a float, saturation parameter of the probe. Default is 0.
@@ -47,7 +46,7 @@ def numAtomsRed(image, delta, cgSquare, imaging_params, s=0, plot=True):
         a tuple: (number of atoms from 2D gaussian fit,
          number of atoms from pixel sum, sigma_x, sigma_y, amplitude, x0, y0)
     """
-    scat = sigmaRed(delta, s)*cgSquare
+    scat = sigmaRed(delta, s)
     pOpt, pCov = gaussian2DFit(image, p0=None, bounds=None, plot=plot)
     amp, xo, yo, sigma_x, sigma_y, theta, offset = pOpt
     pixelSize = imaging_params['pixelSize']
