@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patch
 import numpy as np
 
-
 def centerOfOD(image):
     image = image + 3
     sy, sx = image.shape
@@ -52,6 +51,7 @@ def spectroscopy(ODimages, f, d=4, plot=True, fileNum='', savefig=False):
         ax[0].scatter(x, y, marker='+', color='r')
         rectangle = patch.Rectangle((x-d, y-d), 2*d, 2*d, linewidth=1,edgecolor='r',facecolor='none')
         ax[0].add_patch(rectangle)
+        ax[0].grid(False)
         ax[1].plot(f, index, 'ro')
         if pOpt!=[]:
             ax[1].plot(f, lorentzian(f, *pOpt), 'k', label=r'lor. fit: $\Gamma=$'+str(np.round(pOpt[2], 3))+

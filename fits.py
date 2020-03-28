@@ -2,7 +2,7 @@ import numpy as np
 from scipy.optimize import curve_fit
 from scipy.constants import *
 import matplotlib.pyplot as plt
-
+plt.style.use('seaborn')
 
 def gaussian(x, amplitude, xo, sigma, offset):
     g = offset + amplitude*np.exp(-(x-xo)**2/(2*sigma**2))
@@ -81,9 +81,11 @@ def gaussian2DFit(image, p0=None, bounds=None, plot=True):
         matrix=ax[2].imshow(image, cmap=plt.cm.hot, vmin=pOpt[-1]-0.1, vmax=pOpt[0]*1.2)
         ax[2].set_xlabel('x (pixels)')
         ax[2].set_ylabel('y (pixels)')
+        ax[2].grid(False)
         ax[3].imshow(image-fit, cmap=plt.cm.hot, vmin=pOpt[-1]-0.1, vmax=pOpt[0]*1.2)
         ax[3].set_xlabel('x (pixels)')
         ax[3].set_ylabel('y (pixels)')
+        ax[3].grid(False)
         f.colorbar(matrix, cax=ax[4])
         plt.tight_layout()
     return pOpt, pCov
