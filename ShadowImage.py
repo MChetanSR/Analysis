@@ -40,12 +40,11 @@ class ShadowImage(object):
             self.tags = self.im.props
         else:
             raise IOError('Invalid file!')
-        if (self.im.n_frames%3!=0):
+        if self.im.n_frames%3!=0:
             warn('Not a valid shadow image. \
                   No. of images in the file is not a multiple of 3.')
         self.n = self.im.n_frames//3
         self.frames = self.images()
-
 
     def images(self):
         """
@@ -167,7 +166,6 @@ class ShadowImage(object):
     '''
     def spectrograph(self, fStart, fStep):
         f = fStart+fStep*np.arange(self.n)
-
 
     def __str__(self):
         return str(self.tags)
