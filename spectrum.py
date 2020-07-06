@@ -1,6 +1,7 @@
-from .fits import lorentzian, lorentzianFit, gaussian2DFit
+from .fits import lorentzian, lorentzianFit, gaussian2DFit, bv, bvFit
 import matplotlib.pyplot as plt
 import matplotlib.patches as patch
+from scipy.constants import *
 import numpy as np
 
 def spectroscopy(ODimages, f, d=4, plot=True, fileNum='', savefig=False):
@@ -45,7 +46,7 @@ def spectroscopy(ODimages, f, d=4, plot=True, fileNum='', savefig=False):
             ax[1].plot(f, lorentzian(f, *pOpt), 'k', label=r'lor. fit: $\Gamma=$'+str(np.round(pOpt[2], 3))+
                                                          ', $f_0$ = '+str(np.round(pOpt[1], 3)))
             ax[1].legend()
-        ax[1].set_ylabel('$\propto$ OD', fontsize=16)
+        ax[1].set_ylabel('\propto OD', fontsize=16)
         ax[1].set_xlabel('$f$(in MHz)', fontsize=16)
         ax[1].set_title(r'$f_{start}$ = '+str(f[0])+', $f_{step}$ = '+str(step)+', file = '+fileNum)
         plt.tight_layout()
@@ -81,26 +82,23 @@ def spectroscopyFaddeva(ODimages, f, plot=True, fileNum='', savefig=False):
         index.append(amp*sx*sy)
     maxODAt = np.argmax(index)
     try:
-        pOpt, pCov = lorentzianFit(f, np.array(index), p0=[max(index), f[maxODAt], 0.1, 0])
+        pOpt, pCov = bvFit(f, np.array(index), p0=[max(index), f[maxODAt], 0.1, 0])
+        T = (pOpt[2]**2)*(87*m_p)/k
     except RuntimeError:
         pOpt = []
 
     if plot == True:
-        fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(12,4))
-        i = ax[0].imshow(ODimages[maxODAt])
-        fig.colorbar(i, ax=ax[0])
-        ax[0].scatter(x, y, marker='+', color='r')
-        rectangle = patch.Rectangle((x-d, y-d), 2*d, 2*d, linewidth=1,edgecolor='r',facecolor='none')
-        ax[0].add_patch(rectangle)
-        ax[0].grid(False)
-        ax[1].plot(f, index, 'ro')
+        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(6,4))
+        ax.grid(False)
+        ax.plot(f, index, 'ro')
         if pOpt!=[]:
-            ax[1].plot(f, lorentzian(f, *pOpt), 'k', label=r'lor. fit: $\Gamma=$'+str(np.round(pOpt[2], 3))+
-                                                         ', $f_0$ = '+str(np.round(pOpt[1], 3)))
-            ax[1].legend()
-        ax[1].set_ylabel('$\propto$ OD', fontsize=16)
-        ax[1].set_xlabel('$f$(in MHz)', fontsize=16)
-        ax[1].set_title(r'$f_{start}$ = '+str(f[0])+', $f_{step}$ = '+str(step)+', file = '+fileNum)
+            ax.plot(f, bv(f, *pOpt), 'k', label=r'fit: T='+str(np.round(T, 2))+
+                                                  '$b_0(0)$='+str(np.round(pOpt[1], 1))+
+                                                    ', $f_0$ = '+str(np.round(pOpt[0], 3)))
+            ax.legend()
+        ax.set_ylabel('$OD \\times \sigma_x \\times \sigma_y$', fontsize=16)
+        ax.set_xlabel('$f$(in MHz)', fontsize=16)
+        ax.set_title(r'$f_{start}$ = '+str(f[0])+', $f_{step}$ = '+str(step)+', file = '+fileNum)
         plt.tight_layout()
         if savefig==True:
             plt.savefig('SpectroscopyResultFor'+fileNum+'.png', transparent=True)

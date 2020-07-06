@@ -117,12 +117,12 @@ def lorentzianFit(x, array, p0=None, bounds=None, plot=True):
     return pOpt,pCov
 
 
-def bv(delta, b0, vavg):
+def bv(f, f0, b0, vavg):
     gamma = 2*pi*7.5*milli
     k = 2*pi/(689*nano)
-    x = w((delta + 1j*gamma/2)*1e6/(np.sqrt(2)*k*vavg))
+    x = w((2*pi*(f-f0) + 1j*gamma/2)*1e6/(np.sqrt(2)*k*vavg))
     return b0*np.sqrt(pi/8)*(gamma*1e6/(k*vavg))*x.real
 
-def bvFit(delta, array, p0=None, bounds=None):
-    pOpt, pCov = curve_fit(bv, delta, array, p0, bounds)
+def bvFit(f, array, p0=None, bounds=None):
+    pOpt, pCov = curve_fit(bv, f, array, p0, bounds)
     return pOpt, pCov
