@@ -63,9 +63,9 @@ def gaussian2DFit(image, p0=None, bounds=None, plot=True):
     X = np.meshgrid(x, y)
     if (p0==None and bounds==None):
         p0 = [0.5, Nx/2, Ny/2, Nx/4, Ny/4, 0, 0]
-        b = ([-0.5, 0.25*Nx, 0.25*Ny, 0.1*Nx, 0.1*Ny, -0.1, -0.5],\
+        bounds = ([-0.5, 0.25*Nx, 0.25*Ny, 0.1*Nx, 0.1*Ny, -0.1, -0.5],\
              [10, 0.75*Nx, 0.75*Ny, 0.7*Nx, 0.7*Ny, 0.1, 1])
-    pOpt, pCov = curve_fit(gaussian2D, X, image.reshape((Nx*Ny)), p0, bounds=b)
+    pOpt, pCov = curve_fit(gaussian2D, X, image.reshape((Nx*Ny)), p0, bounds=bounds)
     fit = gaussian2D(X, *pOpt).reshape(Ny, Nx)
     if plot==True:
         f, ax = plt.subplots(nrows=1, ncols=5, gridspec_kw={'width_ratios': [4,4,4,4,0.2]}, figsize=(16, 4))
@@ -97,7 +97,7 @@ def lorentzian(x, amplitude, xo, gamma, offset):
     return l
 
 
-def lorentzianFit(x, array, p0=None, bounds=None, plot=True):
+def lorentzianFit(x, array, p0=None, bounds=None, plot=False):
     """
     Fits the given array to a Lorentzian.
     Parameters:
