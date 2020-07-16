@@ -52,6 +52,6 @@ def sigmaRed(delta, s=0):
         All frequencies are in kHz.
     """
     wLen = 689*nano
-    Gamma = 2*pi*7.5
+    Gamma = 7.5
     sigma_0 = 3*wLen**2/(2*pi)
     return sigma_0/(4*(delta/Gamma)**2+1+s)

@@ -3,6 +3,8 @@ import numpy as np
 from PIL import Image
 from warnings import warn
 from .AndorSifReader import AndorSifFile
+from .fits import gaussian2DFit
+from scipy.constants import *
 
 
 class ShadowImage(object):
@@ -114,7 +116,7 @@ class ShadowImage(object):
             for i in range(self.nAveraging):
                 self.averagedTransmission[j] += self.transmission[self.nSamples*i+j]
                 self.averagedIncidence[j] += self.incidence[self.nSamples*i+j]
-        self.averagedIncidence[self.averagedIncidence == 0] = 1e-5
+        self.averagedIncidence[self.averagedIncidence == 0] = 1e-5        
         T = self.averagedTransmission/self.averagedIncidence
         T[T != T] = 1e-20
         T[T <= 0] = 1e-20
@@ -164,8 +166,27 @@ class ShadowImage(object):
             r = ''
         return r
     '''
-    def spectrograph(self, fStart, fStep):
-        f = fStart+fStep*np.arange(self.n)
+    def redProbeIntensity(self, plot=False):
+        try:
+            probeImage = self.averagedIncidence[0]
+        except AttributeError:
+            print("Call averagedSignalOD to calculate averagedIncidece before calling probeIntensity.")
+            return
+        y = self.im.height
+        x = self.im.width
+        pOpt, pCov = gaussian2DFit(probeImage, p0=[4000, x/2, y/2, x/2, y/2, np.pi/4, 500], plot=plot)
+        totalCount = np.sum(np.sum(probeImage))
+        wx = abs(2*pOpt[3]*2*6.5*1e-4/2.2) # in cm
+        wy = abs(2*pOpt[4]*2*6.5*1e-4/2.2) # in cm
+        area = np.pi*wx*wy
+        if self.ext=='.tif': # for PCO panda 4.2 bi camera red imaging
+            photons = totalCount*0.8/(0.85)
+            energy = photons*h*c/(689*nano)
+            power = energy/(0.50*60*micro) # 0.50 to account for filter and losses on optics
+            intensity = 2*(power/1e-6)/(area) # in micro Watt/cm^2
+            return intensity, power, wx, wy
+        elif self.ext == '.sif': # for andor
+            raise NotImplementedError
 
     def __str__(self):
         return str(self.tags)
