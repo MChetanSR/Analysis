@@ -1,6 +1,7 @@
 import os
 import numpy as np
 from PIL import Image
+import matplotlib.pyplot as plt
 from warnings import warn
 from .AndorSifReader import AndorSifFile
 from .fits import gaussian2DFit
@@ -101,7 +102,7 @@ class ShadowImage(object):
         self.ODaveraged = result
         return self.ODaveraged
 
-    def averagedSignalOD(self, nAveraging):
+    def averagedSignalOD(self, nAveraging, truncate=[]):
         """
         Calculates the average signal with nAveraging being the Superloop
         in the experiment and finds the optical depth after the averaging.
@@ -114,8 +115,9 @@ class ShadowImage(object):
         ShadowImage.opticalDepth(self, [0, self.im.height], [0, self.im.height])
         for j in range(self.nSamples):
             for i in range(self.nAveraging):
-                self.averagedTransmission[j] += self.transmission[self.nSamples*i+j]
-                self.averagedIncidence[j] += self.incidence[self.nSamples*i+j]
+                if not(i in truncate):
+                    self.averagedTransmission[j] += self.transmission[self.nSamples*i+j]
+                    self.averagedIncidence[j] += self.incidence[self.nSamples*i+j]
         self.averagedIncidence[self.averagedIncidence == 0] = 1e-5        
         T = self.averagedTransmission/self.averagedIncidence
         T[T != T] = 1e-20
@@ -144,6 +146,22 @@ class ShadowImage(object):
         T[T <= 0] = 1e-20
         self.averagedOD2 = -np.log(T)
         return self.averagedOD2
+       
+    def plotAveragedSignalOD(self, nAveraging, ROI, truncate=[]):
+        """
+        Calculates and plots the average signal with nAveraging being the Superloop
+        in the experiment and finds the optical depth after the averaging.
+        Returns None.
+        """
+        OD = self.averagedSignalOD(nAveraging, truncate)
+        for i in range(len(OD)):
+            plt.figure()
+            plt.imshow(OD[i, ROI[0]:ROI[1], ROI[2]:ROI[3]], cmap=plt.cm.hot)
+            plt.colorbar()
+            plt.grid(False)
+        return None
+        
+        
     '''
     def comment(self, comment):
         """
