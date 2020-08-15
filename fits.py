@@ -60,7 +60,7 @@ def gaussian2DFit(image, p0=None, bounds=[(), ()], plot=True):
     x = np.linspace(0, Nx, Nx, endpoint=False)
     y = np.linspace(0, Ny, Ny, endpoint=False)
     X = np.meshgrid(x, y)
-    if (p0==None and bounds==None):
+    if (p0==None or bounds==None):
         p0 = [0.5, Nx/2, Ny/2, Nx/4, Ny/4, 0, 0]
         bounds = ([-0.5, 0.4*Nx, 0.4*Ny, 0.0*Nx, 0.0*Ny, -0.1, -0.5],\
              [10, 0.6*Nx, 0.6*Ny, 0.7*Nx, 0.7*Ny, 0.1, 1])

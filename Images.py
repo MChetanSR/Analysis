@@ -14,8 +14,10 @@ class ShadowImage(object):
     sequences that are obtained in the experiment. The multiple image sequence
     consists of the shadow or the absorption image, image of the incident probe
     and the image of the background for as many runs of the experiment.
+    
     Parameters:
         filePath: str, Path to the multiple-image file
+
     Attributes:
         filePath: str, Path to the multiple-image file
         im: PIL.TiffImagePlugin.TiffImageFile or AndorSifFile._SifFrames
@@ -206,5 +208,79 @@ class ShadowImage(object):
         elif self.ext == '.sif': # for andor
             raise NotImplementedError
 
+    def __str__(self):
+        return str(self.tags)
+
+class FluorescenceImage(object):
+    """
+    The main class to extract relavent information from the fluorescence image
+    sequences that are obtained in the experiment. The multiple image sequence
+    consists of fluorecence signal from the atomic cloud for as many runs of the
+    experiment.
+    
+    Parameters:
+        filePath: str, Path to the multiple-image file
+    """
+    def __init__(self, filePath):
+        self.filePath = filePath
+        self.ext = os.path.splitext(filePath)[1]
+        if self.ext == '.tif':
+            self.im = Image.open(filePath)
+            self.tags = self.im.tag.named()
+        elif self.ext == '.sif':
+            self.im = AndorSifFile(filePath).signal
+            self.tags = self.im.props
+        else:
+            raise IOError('Invalid file!')
+        if self.im.n_frames%2!=0:
+            warn('Not a valid fluorescence image. \
+                  No. of images in the file is not a multiple of 2.')
+        self.n = self.im.n_frames//2
+        self.frames = self.images()
+
+    def images(self):
+        """
+        Returns the images present in the multiple image file as an ndarray.
+        """
+        if self.ext == '.tif':
+            frames = np.zeros((self.im.n_frames, self.im.height, self.im.width))
+            for i in range(self.im.n_frames):
+                self.im.seek(i)
+                frames[i] = np.array(self.im)
+        elif self.ext == '.sif':
+            frames = self.im.data
+        return frames
+    
+    def fluorescence(self, xSpan, ySpan):
+        """
+        Returns the fluorence calculated from the FluorencenceImage as an ndarray.
+        xSpan: a list containing the range of pixels of the image in x direction.
+        ySpan: a list containing the range of pixels of the image in y direction.
+        """
+        self.fluorescence = np.zeros((self.n, self.im.height, self.im.width))
+        for i in range(self.n):
+            self.fluorescence[i] = self.frames[2*i]-self.frames[2*i+1]
+
+        self.fluorescence[self.fluorescence <= 0] = 1e-5
+        self.fluorescence[self.fluorescence != self.fluorescence] = 1e-5
+        return self.fluorescence
+    
+    def averagedSignal(self, nAveraging, truncate=[]):
+        """
+        Calculates the average signal with nAveraging being the Superloop
+        in the experiment and finds the fluorescence after the averaging.
+        Returns an ndarray of length equal to Serie in the experiment.
+        """
+        self.nAveraging = nAveraging
+        self.nSamples = int(self.n/nAveraging)
+        self.averagedSignal = np.zeros((self.nSamples, self.im.height, self.im.width))
+        FluorescenceImage.fluorescence(self, [0, self.im.width], [0, self.im.height])
+        for j in range(self.nSamples):
+            for i in range(self.nAveraging):
+                if not(i in truncate):
+                    self.averagedSignal[j] += self.fluorescence[self.nSamples*i+j]
+        self.averagedSignal[self.averagedSignal <= 0] = 1e-5        
+        return self.averagedSignal/(nAveraging-len(truncate))
+    
     def __str__(self):
         return str(self.tags)
