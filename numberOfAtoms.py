@@ -4,7 +4,7 @@ from .sigma import sigmaBlue, sigmaRed
 from .fits import gaussian2DFit
 from scipy.constants import *
 
-def numAtomsBlue(image, delta, imaging_params, s=0, plot=True):
+def numAtomsBlue(image, delta, imaging_params, s=0, plot=True, isotope=87):
     '''
     Calculates number of atoms from blue shadow imaging.
     Parameters:
@@ -19,7 +19,7 @@ def numAtomsBlue(image, delta, imaging_params, s=0, plot=True):
         a tuple: (number of atoms from 2D gaussian fit,
          number of atoms from pixel sum, sigma_x, sigma_y, amplitude, x0, y0)
     '''
-    scat = sigmaBlue(delta, 87, s)
+    scat = sigmaBlue(delta, int(isotope), s)
     pOpt, pCov = gaussian2DFit(image, p0=None, bounds=None, plot=plot)
     amp, xo, yo, sigma_x, sigma_y, theta, offset = pOpt
     pixelSize = imaging_params['pixelSize']
@@ -56,3 +56,9 @@ def numAtomsRed(image, delta, imaging_params, s=0, plot=True):
     #NIntegrate = integrate.simps(integrate.simps(image))*(pixelSize*binning/magnification)**2/scat
     NPixel = np.sum(np.sum(image, axis=0), axis=0)*(pixelSize*binning/magnification)**2/scat
     return NGaussian, NPixel, pOpt[3], pOpt[4], pOpt[0], pOpt[1], pOpt[2]
+
+def TempShadow(OD, TOF, imaging_params):
+    pass
+
+def TempFluorescence(fl, TOF, imaging_params):
+    pass
