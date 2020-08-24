@@ -156,11 +156,12 @@ class ShadowImage(object):
         Returns None.
         """
         OD = self.averagedSignalOD(nAveraging, truncate)
+        f, ax = plt.subplots(nrows=len(OD), ncols=1, figsize=(4,len(OD)*2))
         for i in range(len(OD)):
-            plt.figure()
-            plt.imshow(OD[i, ROI[0]:ROI[1], ROI[2]:ROI[3]], cmap=plt.cm.hot)
-            plt.colorbar()
-            plt.grid(False)
+            a = ax[i].imshow(OD[i, ROI[0]:ROI[1], ROI[2]:ROI[3]], cmap=plt.cm.hot)
+            ax[i].grid(False)
+            f.colorbar(a, ax=ax[i])
+        plt.tight_layout()
         return None
         
         
@@ -187,6 +188,28 @@ class ShadowImage(object):
         return r
     '''
     def redProbeIntensity(self, plot=False):
+        try:
+            probeImage = self.averagedIncidence[0]
+        except AttributeError:
+            print("Call averagedSignalOD to calculate averagedIncidece before calling probeIntensity.")
+            return
+        y = self.im.height
+        x = self.im.width
+        pOpt, pCov = gaussian2DFit(probeImage, p0=[4000, x/2, y/2, x/2, y/2, np.pi/4, 500], plot=plot)
+        totalCount = np.sum(np.sum(probeImage))
+        wx = abs(2*pOpt[3]*2*6.5*1e-4/2.2) # in cm
+        wy = abs(2*pOpt[4]*2*6.5*1e-4/2.2) # in cm
+        area = np.pi*wx*wy
+        if self.ext=='.tif': # for PCO panda 4.2 bi camera red imaging
+            photons = totalCount*0.8/(0.85)
+            energy = photons*h*c/(689*nano)
+            power = energy/(0.50*60*micro) # 0.50 to account for filter and losses on optics
+            intensity = 2*(power/1e-6)/(area) # in micro Watt/cm^2
+            return intensity, power, wx, wy
+        elif self.ext == '.sif': # for andor
+            raise NotImplementedError
+    
+    def blueProbeIntensity(self, plot=False):
         try:
             probeImage = self.averagedIncidence[0]
         except AttributeError:
