@@ -192,7 +192,10 @@ class ShadowImage(object):
             r = ''
         return r
     '''
-    def redProbeIntensity(self, imaging_params, plot=False):
+    def redProbeIntensity(self, params, plot=False):
+        """
+        Returns intensity(micro Watt/cm^2), power(W), waist_x, waist_y
+        """
         try:
             probeImage = self.averagedIncidence[0]
         except AttributeError:
@@ -216,6 +219,9 @@ class ShadowImage(object):
             raise NotImplementedError
     
     def blueProbeIntensity(self, params, plot=False):
+        """
+        Returns intensity(micro Watt/cm^2), power(W), waist_x, waist_y
+        """
         try:
             probeImage = self.averagedIncidence[0]
         except AttributeError:
@@ -229,10 +235,10 @@ class ShadowImage(object):
         wx = abs(2*pOpt[3]*imConstant*100) # in cm
         wy = abs(2*pOpt[4]*imConstant*100) # in cm
         area = np.pi*wx*wy
-        if self.ext=='.tif': # for PCO panda 4.2 bi camera red imaging
+        if self.ext=='.tif': # for PCO panda 4.2 bi camera blue imaging
             photons = totalCount*0.8/(0.85)
             energy = photons*h*c/(461*nano)
-            power = energy/(0.95*60*micro) # 0.95 to account for filter and losses on optics
+            power = energy/(0.95*20*micro) # 0.95 to account for filter and losses on optics
             intensity = 2*(power/1e-6)/(area) # in micro Watt/cm^2
             return intensity, power, wx, wy
         elif self.ext == '.sif': # for andor
