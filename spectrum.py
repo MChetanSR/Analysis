@@ -112,8 +112,8 @@ def spectroscopyFaddeva(ODimages, f, imaging_params, plot=True, fileNum='', save
     s = imaging_params['saturation']
     try:
         amp, xo, yo, sx, sy, theta, offset = gaussian2DFit(ODimages[maxODAt], p0, bounds, plot=False)[0]
-        b = ([min(f), 0.5, 0.01,  15], [max(f), 300, 50,  20])
-        pOpt, pCov = bvFit(f, np.array(index), p0=[f[maxODAt], max(index)*10, 2, 16], bounds=b)
+        b = ([min(f), 0.5, 0.01,  70], [max(f), 300, 50,  80])
+        pOpt, pCov = bvFit(f, np.array(index), p0=[f[maxODAt], max(index)*10, 2, 76], bounds=b)
     except RuntimeError:
         pOpt = [0, 0, 0, 0]
     T = pOpt[2]

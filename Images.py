@@ -120,6 +120,8 @@ class ShadowImage(object):
                 if not(i in truncate):
                     self.averagedTransmission[j] += self.transmission[self.nSamples*i+j]
                     self.averagedIncidence[j] += self.incidence[self.nSamples*i+j]
+        self.averagedTransmission /= (nAveraging-len(truncate))
+        self.averagedIncidence /= (nAveraging-len(truncate))
         self.averagedIncidence[self.averagedIncidence == 0] = 1e-5        
         T = self.averagedTransmission/self.averagedIncidence
         T[T != T] = 1e-20
@@ -142,6 +144,9 @@ class ShadowImage(object):
             for i in range(self.nAveraging):
                 self.averagedTransmission2[j] += self.transmission[self.nSamples*j+i]
                 self.averagedIncidence2[j] += self.incidence[self.nSamples*j+i]
+        
+        self.averagedTransmission /= (nAveraging-len(truncate))
+        self.averagedIncidence /= (nAveraging-len(truncate))
         self.averagedIncidence2[self.averagedIncidence == 0] = 1e-5
         T = self.averagedTransmission2/self.averagedIncidence2
         T[T != T] = 1e-20
@@ -156,11 +161,12 @@ class ShadowImage(object):
         Returns None.
         """
         OD = self.averagedSignalOD(nAveraging, truncate)
+        f, ax = plt.subplots(nrows=len(OD), ncols=1, figsize=(4,len(OD)*2))
         for i in range(len(OD)):
-            plt.figure()
-            plt.imshow(OD[i, ROI[0]:ROI[1], ROI[2]:ROI[3]], cmap=plt.cm.hot)
-            plt.colorbar()
-            plt.grid(False)
+            a = ax[i].imshow(OD[i, ROI[0]:ROI[1], ROI[2]:ROI[3]], cmap=plt.cm.hot)
+            ax[i].grid(False)
+            f.colorbar(a, ax=ax[i])
+        plt.tight_layout()
         return None
         
         
@@ -186,7 +192,10 @@ class ShadowImage(object):
             r = ''
         return r
     '''
-    def redProbeIntensity(self, plot=False):
+    def redProbeIntensity(self, params, plot=False):
+        """
+        Returns intensity(micro Watt/cm^2), power(W), waist_x, waist_y
+        """
         try:
             probeImage = self.averagedIncidence[0]
         except AttributeError:
@@ -194,15 +203,42 @@ class ShadowImage(object):
             return
         y = self.im.height
         x = self.im.width
+        imConstant = params['binning']*params['pixelSize']/params['magnification']
         pOpt, pCov = gaussian2DFit(probeImage, p0=[4000, x/2, y/2, x/2, y/2, np.pi/4, 500], plot=plot)
         totalCount = np.sum(np.sum(probeImage))
-        wx = abs(2*pOpt[3]*2*6.5*1e-4/2.2) # in cm
-        wy = abs(2*pOpt[4]*2*6.5*1e-4/2.2) # in cm
+        wx = abs(2*pOpt[3]*imConstant*100) # in cm
+        wy = abs(2*pOpt[4]*imConstant*100) # in cm
         area = np.pi*wx*wy
         if self.ext=='.tif': # for PCO panda 4.2 bi camera red imaging
             photons = totalCount*0.8/(0.85)
             energy = photons*h*c/(689*nano)
-            power = energy/(0.50*60*micro) # 0.50 to account for filter and losses on optics
+            power = energy/(0.95*60*micro) # 0.95 to account for filter and losses on optics
+            intensity = 2*(power/1e-6)/(area) # in micro Watt/cm^2
+            return intensity, power, wx, wy
+        elif self.ext == '.sif': # for andor
+            raise NotImplementedError
+    
+    def blueProbeIntensity(self, params, plot=False):
+        """
+        Returns intensity(micro Watt/cm^2), power(W), waist_x, waist_y
+        """
+        try:
+            probeImage = self.averagedIncidence[0]
+        except AttributeError:
+            print("Call averagedSignalOD to calculate averagedIncidece before calling probeIntensity.")
+            return
+        y = self.im.height
+        x = self.im.width
+        imConstant = params['binning']*params['pixelSize']/params['magnification']
+        pOpt, pCov = gaussian2DFit(probeImage, p0=[4000, x/2, y/2, x/2, y/2, np.pi/4, 500], plot=plot)
+        totalCount = np.sum(np.sum(probeImage))
+        wx = abs(2*pOpt[3]*imConstant*100) # in cm
+        wy = abs(2*pOpt[4]*imConstant*100) # in cm
+        area = np.pi*wx*wy
+        if self.ext=='.tif': # for PCO panda 4.2 bi camera blue imaging
+            photons = totalCount*0.8/(0.85)
+            energy = photons*h*c/(461*nano)
+            power = energy/(0.95*20*micro) # 0.95 to account for filter and losses on optics
             intensity = 2*(power/1e-6)/(area) # in micro Watt/cm^2
             return intensity, power, wx, wy
         elif self.ext == '.sif': # for andor
@@ -273,14 +309,35 @@ class FluorescenceImage(object):
         """
         self.nAveraging = nAveraging
         self.nSamples = int(self.n/nAveraging)
-        self.averagedSignal = np.zeros((self.nSamples, self.im.height, self.im.width))
+        self.averagedFluorescence = np.zeros((self.nSamples, self.im.height, self.im.width))
+        self.averagedBackground = np.zeros((self.nSamples, self.im.height, self.im.width))
         FluorescenceImage.fluorescence(self, [0, self.im.width], [0, self.im.height])
         for j in range(self.nSamples):
             for i in range(self.nAveraging):
                 if not(i in truncate):
-                    self.averagedSignal[j] += self.fluorescence[self.nSamples*i+j]
-        self.averagedSignal[self.averagedSignal <= 0] = 1e-5        
-        return self.averagedSignal/(nAveraging-len(truncate))
+                    self.averagedFluorescence[j] += self.fluorescence[self.nSamples*i+j]
+                    self.averagedBackground[j] += self.frames[2*(self.nSamples*i+j)+1]
+        self.averagedFluorescence[self.averagedFluorescence <= 0] = 1e-5  
+        self.averagedBackground /= (nAveraging-len(truncate))
+        return self.averagedFluorescence/(nAveraging-len(truncate))
+    
+    def plotAveragedSignal(self, nAveraging, ROI, truncate=[]):
+        """
+        Calculates and plots the average signal with nAveraging being the Superloop
+        in the experiment.
+        Returns None.
+        """
+        fl = self.averagedSignal(nAveraging, truncate)
+        w = int(self.im.width/(self.im.width+self.im.height)*4)
+        h = int(self.im.height/(self.im.width+self.im.height)*4)
+        f, ax = plt.subplots(nrows=len(fl), ncols=1, figsize=(w, h))
+        for i in range(len(fl)):
+            a = ax[i].imshow(fl[i, ROI[0]:ROI[1], ROI[2]:ROI[3]], cmap=plt.cm.hot)
+            ax[i].grid(False)
+            f.colorbar(a, ax=ax[i])
+        plt.tight_layout()
+        return None
+    
     
     def __str__(self):
         return str(self.tags)
