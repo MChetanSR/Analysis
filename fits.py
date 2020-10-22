@@ -2,12 +2,12 @@ import numpy as np
 from scipy.optimize import curve_fit
 from scipy.constants import *
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 plt.style.use('seaborn')
 
 def gaussian(x, amplitude, xo, sigma, offset):
     g = offset + amplitude*np.exp(-(x-xo)**2/(2*sigma**2))
     return g
-
 
 def gaussianFit(array, p0=[], bounds=[(), ()], plot=True):
     """
@@ -29,7 +29,6 @@ def gaussianFit(array, p0=[], bounds=[(), ()], plot=True):
         pass
     return pOpt,pCov
 
-
 def gaussian2D(X, amplitude, xo, yo, sigma_x, sigma_y, theta, offset):
     x = X[0]
     y = X[1]
@@ -38,7 +37,6 @@ def gaussian2D(X, amplitude, xo, yo, sigma_x, sigma_y, theta, offset):
     c = (np.sin(theta)**2)/(2*sigma_x**2) + (np.cos(theta)**2)/(2*sigma_y**2)
     g = offset + amplitude*np.exp(-(a*((x-xo)**2) + b*(x-xo)*(y-yo) + c*((y-yo)**2)))
     return g.ravel()
-
 
 def gaussian2DFit(image, p0=None, bounds=[(), ()], plot=True):
     """
@@ -90,11 +88,66 @@ def gaussian2DFit(image, p0=None, bounds=[(), ()], plot=True):
         plt.tight_layout()
     return pOpt, pCov
 
+def multipleGaussian2D(X, *args):
+    amplitudes, xos, yos, sigma_xs, sigma_ys, thetas, offsets = np.array(args).reshape((7,4))
+    x = X[0]
+    y = X[1]
+    g = 0
+    for i in range(len(amplitudes)):
+        g += gaussian2D(X, amplitudes[i], xos[i], yos[i], sigma_xs[i], sigma_ys[i], thetas[i], offsets[i])
+    return g.ravel()
+
+def multipleGaussian2DFit(image, p0, bounds, TOF, plot=True):
+    Ny, Nx = image.shape
+    x = np.linspace(0, Nx, Nx, endpoint=False)
+    y = np.linspace(0, Ny, Ny, endpoint=False)
+    X = np.meshgrid(x, y)
+    # first Gaussian or thick Gaussian should be well fit first. p0 and bounds should take care of this.
+    pOpt, pCov = curve_fit(gaussian2D, X, image.reshape((Nx * Ny)), p0, bounds=bounds)
+    disQuanta = hbar * (2 * pi / (689 * nano * 87 * m_p)) * TOF * milli
+    dis = disQuanta * 2.5 / (16 * micro)
+    p0 = [[pOpt[0], pOpt[0]*0.2, pOpt[0]*0.2, 30],
+          [pOpt[1], pOpt[1]-dis, pOpt[1], pOpt[1]+dis],
+          [pOpt[2], pOpt[2]-dis, pOpt[2]-2*dis, pOpt[2]-dis],
+          [pOpt[3], pOpt[3], pOpt[3], pOpt[3]],
+          [pOpt[4], pOpt[4], pOpt[4], pOpt[4]],
+          [pOpt[5], pOpt[5], pOpt[5], pOpt[5]],
+          [pOpt[6], pOpt[6], pOpt[6], pOpt[6]]]
+    bounds = ([[pOpt[0]-1000, 3, 3, 3],
+               [pOpt[1]-0.1, pOpt[1]-dis-0.1, pOpt[1]-0.1, pOpt[1]+dis-0.1],
+               [pOpt[2]-0.1, pOpt[2]-dis-0.1, pOpt[2]-2*dis-0.1, pOpt[2]-dis-0.1],
+               [pOpt[3]-0.1, pOpt[3]-0.1, pOpt[3]-0.1, pOpt[3]-0.1],
+               [pOpt[4]-0.1, pOpt[4]-0.1, pOpt[4]-0.1, pOpt[4]-0.1],
+               [pOpt[5]-0.1, pOpt[5]-0.1, pOpt[5]-0.1, pOpt[5]-0.1],
+               [pOpt[6]-0.1, pOpt[6]-0.1, pOpt[6]-0.1, pOpt[6]-0.1]],
+              [[pOpt[0]+1000, pOpt[0]*.2, pOpt[0]*.2, pOpt[0]*.08],
+               [pOpt[1]+0.1, pOpt[1]-dis+0.1, pOpt[1]+0.1, pOpt[1]+dis+0.1],
+               [pOpt[2]+0.1, pOpt[2]-dis+0.1, pOpt[2]-2*dis+0.1, pOpt[2]-dis+0.1],
+               [pOpt[3]+0.1, pOpt[3]+0.1, pOpt[3]+0.1, pOpt[3]+0.1],
+               [pOpt[4]+0.1, pOpt[4]+0.1, pOpt[4]+0.1, pOpt[4]+0.1],
+               [pOpt[5]+0.1, pOpt[5]+0.1, pOpt[5]+0.1, pOpt[5]+0.1],
+               [pOpt[6]+0.1, pOpt[6]+0.1, pOpt[6]+0.1, pOpt[6]+0.1]])
+    pOpt, pCov = curve_fit(multipleGaussian2D, X, image.reshape((Nx*Ny)), p0=np.array(p0).reshape((28)), bounds=np.array(bounds).reshape((2, 28)))
+    fit = multipleGaussian2D(X, *pOpt).reshape(Ny, Nx)
+    if plot == True:
+        f, ax = plt.subplots(nrows=1, ncols=4, gridspec_kw={'width_ratios': [4, 0.2, 4, 0.2]}, figsize=(10, 4))
+        ax[0].contour(X[0], X[1], fit, cmap=plt.cm.hot, vmin=pOpt[-1], vmax=pOpt[-1]+abs(pOpt[0])*1.2, norm=mpl.colors.LogNorm())
+        matrix = ax[0].imshow(image, cmap=plt.cm.hot, vmin=pOpt[-1], vmax=pOpt[-1]+abs(pOpt[0])*1.2, norm=mpl.colors.LogNorm())
+        ax[0].set_xlabel('x (pixels)')
+        ax[0].set_ylabel('y (pixels)')
+        ax[0].grid(False)
+        residue = ax[2].imshow(image-fit, cmap=plt.cm.hot)
+        ax[2].set_xlabel('x(pixels)')
+        ax[2].set_ylabel('y(pixels)')
+        ax[2].grid(False)
+        f.colorbar(matrix, cax=ax[1])
+        f.colorbar(residue, cax=ax[3])
+        plt.tight_layout()
+    return pOpt, pCov
 
 def lorentzian(x, amplitude, xo, gamma, offset):
     l = offset + amplitude*(gamma/2)/((x-xo)**2+(gamma/2)**2)
     return l
-
 
 def lorentzianFit(x, array, p0=[], bounds=[(), ()], plot=False):
     """

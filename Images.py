@@ -8,6 +8,7 @@ from .fits import gaussian2DFit
 from scipy.constants import *
 
 
+
 class ShadowImage(object):
     """
     The main class to extract relavent information from the shadow image
@@ -60,9 +61,10 @@ class ShadowImage(object):
             for i in range(self.im.n_frames):
                 self.im.seek(i)
                 frames[i] = np.array(self.im)
+            return frames
         elif self.ext == '.sif':
             frames = self.im.data
-        return frames
+            return frames
 
     def opticalDepth(self, xSpan, ySpan):
         """
@@ -104,7 +106,7 @@ class ShadowImage(object):
         self.ODaveraged = result
         return self.ODaveraged
 
-    def averagedSignalOD(self, nAveraging, truncate=[]):
+    def averagedSignalOD(self, nAveraging, truncate=()):
         """
         Calculates the average signal with nAveraging being the Superloop
         in the experiment and finds the optical depth after the averaging.
@@ -129,7 +131,7 @@ class ShadowImage(object):
         self.averagedOD = -np.log(T)
         return self.averagedOD
 
-    def averagedSignalOD2(self, nAveraging):
+    def averagedSignalOD2(self, nAveraging, truncate=()):
         """
         Calculates the average signal with nAveraging being the loops
         in the experiment and finds the optical depth after the averaging.
@@ -154,7 +156,7 @@ class ShadowImage(object):
         self.averagedOD2 = -np.log(T)
         return self.averagedOD2
        
-    def plotAveragedSignalOD(self, nAveraging, ROI, truncate=[]):
+    def plotAveragedSignalOD(self, nAveraging, ROI, truncate=()):
         """
         Calculates and plots the average signal with nAveraging being the Superloop
         in the experiment and finds the optical depth after the averaging.
@@ -249,9 +251,9 @@ class ShadowImage(object):
 
 class FluorescenceImage(object):
     """
-    The main class to extract relavent information from the fluorescence image
+    The main class to extract relevant information from the fluorescence image
     sequences that are obtained in the experiment. The multiple image sequence
-    consists of fluorecence signal from the atomic cloud for as many runs of the
+    consists of fluorescence signal from the atomic cloud for as many runs of the
     experiment.
     
     Parameters:
@@ -283,9 +285,10 @@ class FluorescenceImage(object):
             for i in range(self.im.n_frames):
                 self.im.seek(i)
                 frames[i] = np.array(self.im)
+            return frames
         elif self.ext == '.sif':
             frames = self.im.data
-        return frames
+            return frames
     
     def fluorescence(self, xSpan, ySpan):
         """
@@ -301,7 +304,7 @@ class FluorescenceImage(object):
         self.fluorescence[self.fluorescence != self.fluorescence] = 1e-5
         return self.fluorescence
     
-    def averagedSignal(self, nAveraging, truncate=[]):
+    def averagedSignal(self, nAveraging, truncate=()):
         """
         Calculates the average signal with nAveraging being the Superloop
         in the experiment and finds the fluorescence after the averaging.
@@ -321,7 +324,7 @@ class FluorescenceImage(object):
         self.averagedBackground /= (nAveraging-len(truncate))
         return self.averagedFluorescence/(nAveraging-len(truncate))
     
-    def plotAveragedSignal(self, nAveraging, ROI, truncate=[]):
+    def plotAveragedSignal(self, nAveraging, ROI, truncate=()):
         """
         Calculates and plots the average signal with nAveraging being the Superloop
         in the experiment.
@@ -341,3 +344,24 @@ class FluorescenceImage(object):
     
     def __str__(self):
         return str(self.tags)
+
+
+class TOFImageInGF(FluorescenceImage):
+    '''
+    A class to extract fluorescence from different peaks of time of flight images of atoms expanding in gauge field.
+    Parameters:
+        filePath: str, Path to the multiple-image file
+    '''
+    def __init__(self, filePath):
+        super().__init__(filePath)
+
+    def peakAmplitudes(self, TOF):
+        '''
+
+        Args:
+            TOF: time of flight in ms.
+        Returns:
+
+        '''
+
+        pass
