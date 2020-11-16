@@ -301,7 +301,7 @@ class FluorescenceImage(object):
             self.fluorescence[i] = self.frames[2*i]-self.frames[2*i+1]
 
         self.fluorescence[self.fluorescence <= 0] = 1e-5
-        self.fluorescence[self.fluorescence != self.fluorescence] = 1e-5
+        self.fluorescence[self.fluorescence != self.fluorescence] = 1000
         return self.fluorescence
     
     def averagedSignal(self, nAveraging, truncate=()):
@@ -320,7 +320,7 @@ class FluorescenceImage(object):
                 if not(i in truncate):
                     self.averagedFluorescence[j] += self.fluorescence[self.nSamples*i+j]
                     self.averagedBackground[j] += self.frames[2*(self.nSamples*i+j)+1]
-        self.averagedFluorescence[self.averagedFluorescence <= 0] = 1e-5  
+        self.averagedFluorescence[self.averagedFluorescence <= 0] = 1e-5
         self.averagedBackground /= (nAveraging-len(truncate))
         return self.averagedFluorescence/(nAveraging-len(truncate))
     

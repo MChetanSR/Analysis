@@ -89,7 +89,7 @@ def gaussian2DFit(image, p0=None, bounds=[(), ()], plot=True):
     return pOpt, pCov
 
 def multipleGaussian2D(X, *args):
-    amplitudes, xos, yos, sigma_xs, sigma_ys, thetas, offsets = np.array(args).reshape((7,4))
+    amplitudes, xos, yos, sigma_xs, sigma_ys, thetas, offsets = np.array(args).reshape((7,5))
     x = X[0]
     y = X[1]
     g = 0
@@ -97,46 +97,59 @@ def multipleGaussian2D(X, *args):
         g += gaussian2D(X, amplitudes[i], xos[i], yos[i], sigma_xs[i], sigma_ys[i], thetas[i], offsets[i])
     return g.ravel()
 
-def multipleGaussian2DFit(image, p0, bounds, TOF, plot=True):
+def multipleGaussian2DFit(image, p0, bounds, TOF, plot=True, cropSize=6, logNorm=False):
     Ny, Nx = image.shape
     x = np.linspace(0, Nx, Nx, endpoint=False)
     y = np.linspace(0, Ny, Ny, endpoint=False)
     X = np.meshgrid(x, y)
     # first Gaussian or thick Gaussian should be well fit first. p0 and bounds should take care of this.
-    pOpt, pCov = curve_fit(gaussian2D, X, image.reshape((Nx * Ny)), p0, bounds=bounds)
-    disQuanta = hbar * (2 * pi / (689 * nano * 87 * m_p)) * TOF * milli
-    dis = disQuanta * 2.5 / (16 * micro)
-    p0 = [[pOpt[0], pOpt[0]*0.2, pOpt[0]*0.2, 30],
-          [pOpt[1], pOpt[1]-dis, pOpt[1], pOpt[1]+dis],
-          [pOpt[2], pOpt[2]-dis, pOpt[2]-2*dis, pOpt[2]-dis],
-          [pOpt[3], pOpt[3], pOpt[3], pOpt[3]],
-          [pOpt[4], pOpt[4], pOpt[4], pOpt[4]],
-          [pOpt[5], pOpt[5], pOpt[5], pOpt[5]],
-          [pOpt[6], pOpt[6], pOpt[6], pOpt[6]]]
-    bounds = ([[pOpt[0]-1000, 3, 3, 3],
-               [pOpt[1]-0.1, pOpt[1]-dis-0.1, pOpt[1]-0.1, pOpt[1]+dis-0.1],
-               [pOpt[2]-0.1, pOpt[2]-dis-0.1, pOpt[2]-2*dis-0.1, pOpt[2]-dis-0.1],
-               [pOpt[3]-0.1, pOpt[3]-0.1, pOpt[3]-0.1, pOpt[3]-0.1],
-               [pOpt[4]-0.1, pOpt[4]-0.1, pOpt[4]-0.1, pOpt[4]-0.1],
-               [pOpt[5]-0.1, pOpt[5]-0.1, pOpt[5]-0.1, pOpt[5]-0.1],
-               [pOpt[6]-0.1, pOpt[6]-0.1, pOpt[6]-0.1, pOpt[6]-0.1]],
-              [[pOpt[0]+1000, pOpt[0]*.2, pOpt[0]*.2, pOpt[0]*.08],
-               [pOpt[1]+0.1, pOpt[1]-dis+0.1, pOpt[1]+0.1, pOpt[1]+dis+0.1],
-               [pOpt[2]+0.1, pOpt[2]-dis+0.1, pOpt[2]-2*dis+0.1, pOpt[2]-dis+0.1],
-               [pOpt[3]+0.1, pOpt[3]+0.1, pOpt[3]+0.1, pOpt[3]+0.1],
-               [pOpt[4]+0.1, pOpt[4]+0.1, pOpt[4]+0.1, pOpt[4]+0.1],
-               [pOpt[5]+0.1, pOpt[5]+0.1, pOpt[5]+0.1, pOpt[5]+0.1],
-               [pOpt[6]+0.1, pOpt[6]+0.1, pOpt[6]+0.1, pOpt[6]+0.1]])
-    pOpt, pCov = curve_fit(multipleGaussian2D, X, image.reshape((Nx*Ny)), p0=np.array(p0).reshape((28)), bounds=np.array(bounds).reshape((2, 28)))
+    croppedImage = image[p0[2]-cropSize:p0[2]+cropSize, p0[1]-cropSize:p0[1]+cropSize]
+    Xc = np.meshgrid(np.arange(0, 2*cropSize), np.arange(0, 2*cropSize))
+    croppedP0 = (p0[0], cropSize, cropSize, p0[3], p0[4], p0[5], p0[6])
+    b = bounds
+    b[0][1], b[0][2] = 0, 0
+    b[1][1], b[1][2] = 3*cropSize/2, 3*cropSize/2
+    pOpt, pCov = gaussian2DFit(croppedImage, p0=croppedP0,bounds=b, plot=False)
+    pOpt[1] = p0[1]-cropSize+pOpt[1]
+    pOpt[2] = p0[2]-cropSize+pOpt[2]
+    disQuanta = hbar*(2*pi/(689*nano*87*m_p))*TOF*milli
+    dis = disQuanta*2.5/(16 * micro)
+    p0 = [[pOpt[0], pOpt[0]*0.4, pOpt[0]*0.2, pOpt[0]*0.02, pOpt[0]*0.02],
+          [pOpt[1], pOpt[1]-dis, pOpt[1], pOpt[1]+dis, pOpt[1]-dis],
+          [pOpt[2], pOpt[2]-dis, pOpt[2]-2*dis, pOpt[2]-dis, pOpt[2]-3*dis],
+          [pOpt[3], pOpt[3], pOpt[3], pOpt[3], pOpt[3]],
+          [pOpt[4], pOpt[4], pOpt[4], pOpt[4], pOpt[4]],
+          [pOpt[5], pOpt[5], pOpt[5], pOpt[5], pOpt[5]],
+          [pOpt[6], pOpt[6], pOpt[6], pOpt[6], pOpt[6]]]
+    bounds = ([[pOpt[0]*0.5, pOpt[0]*0.001, pOpt[0]*0.001, -pOpt[0]*0.1, -pOpt[0]*0.1],
+               [pOpt[1]-0.1, pOpt[1]-dis*1.3, pOpt[1]*0.7, pOpt[1]+dis*0.7, pOpt[1]-dis*1.3],
+               [pOpt[2]-0.1, pOpt[2]-dis*1.3, pOpt[2]-2*dis*1.3, pOpt[2]-dis*1.3, pOpt[2]-3*dis*1.2],
+               [pOpt[3]*0.8, pOpt[3]*0.8, pOpt[3]*0.8, pOpt[3]*0.8, pOpt[3]*0.8],
+               [pOpt[4]*0.8, pOpt[4]*0.8, pOpt[4]*0.8, pOpt[4]*0.8, pOpt[4]*0.8],
+               [pOpt[5]-0.1, pOpt[5]-0.1, pOpt[5]-0.1, pOpt[5]-0.1, pOpt[5]-0.1],
+               [pOpt[6]-100, pOpt[6]-100, pOpt[6]-100, pOpt[6]-100, pOpt[6]-100]],
+              [[pOpt[0]*1.1, pOpt[0]*0.7, pOpt[0]*0.7, pOpt[0]*0.2, pOpt[0]*0.2],
+               [pOpt[1]+0.1, pOpt[1]-dis*0.7, pOpt[1]*1.3, pOpt[1]+dis*1.3, pOpt[1]-dis*0.7],
+               [pOpt[2]+0.1, pOpt[2]-dis*0.7, pOpt[2]-2*dis*0.7, pOpt[2]-dis*0.7, pOpt[2]-3*dis*0.8],
+               [pOpt[3]*1.2, pOpt[3]*1.2, pOpt[3]*1.2, pOpt[3]*1.2, pOpt[3]*1.2],
+               [pOpt[4]*1.2, pOpt[4]*1.2, pOpt[4]*1.2, pOpt[4]*1.2, pOpt[4]*1.2],
+               [pOpt[5]+0.2, pOpt[5]+0.2, pOpt[5]+0.2, pOpt[5]+0.2, pOpt[5]+0.2],
+               [pOpt[6]+20, pOpt[6]+20, pOpt[6]+20, pOpt[6]+20, pOpt[6]+20]])
+    pOpt, pCov = curve_fit(multipleGaussian2D, X, image.reshape((Nx*Ny)), p0=np.array(p0).reshape((35)), bounds=np.array(bounds).reshape((2, 35)))
     fit = multipleGaussian2D(X, *pOpt).reshape(Ny, Nx)
     if plot == True:
         f, ax = plt.subplots(nrows=1, ncols=4, gridspec_kw={'width_ratios': [4, 0.2, 4, 0.2]}, figsize=(10, 4))
-        ax[0].contour(X[0], X[1], fit, cmap=plt.cm.hot, vmin=pOpt[-1], vmax=pOpt[-1]+abs(pOpt[0])*1.2, norm=mpl.colors.LogNorm())
-        matrix = ax[0].imshow(image, cmap=plt.cm.hot, vmin=pOpt[-1], vmax=pOpt[-1]+abs(pOpt[0])*1.2, norm=mpl.colors.LogNorm())
+        if logNorm==True:
+            ax[0].contour(X[0], X[1], fit, cmap=plt.cm.hot, vmin=9e-1, vmax=9e-1+abs(pOpt[0])*1.2, norm=mpl.colors.LogNorm()) 
+            matrix = ax[0].imshow(image, aspect='auto', cmap=plt.cm.hot, vmin=9e-1, vmax=9e-1+abs(pOpt[0])*1.2, norm=mpl.colors.LogNorm())
+            residue = ax[2].imshow(image-fit, aspect='auto', cmap=plt.cm.hot, vmin=-50)
+        else:
+            ax[0].contour(X[0], X[1], fit, cmap=plt.cm.hot, vmin=pOpt[-1], vmax=pOpt[-1]+abs(pOpt[0])*1.2) 
+            matrix = ax[0].imshow(image, aspect='auto', cmap=plt.cm.hot, vmin=pOpt[-1], vmax=pOpt[-1]+abs(pOpt[0])*1.2)
+            residue = ax[2].imshow(image-fit, aspect='auto', cmap=plt.cm.hot, vmin=-50)
         ax[0].set_xlabel('x (pixels)')
         ax[0].set_ylabel('y (pixels)')
         ax[0].grid(False)
-        residue = ax[2].imshow(image-fit, cmap=plt.cm.hot)
         ax[2].set_xlabel('x(pixels)')
         ax[2].set_ylabel('y(pixels)')
         ax[2].grid(False)
