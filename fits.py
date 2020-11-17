@@ -140,13 +140,13 @@ def multipleGaussian2DFit(image, p0, bounds, TOF, plot=True, cropSize=6, logNorm
     if plot == True:
         f, ax = plt.subplots(nrows=1, ncols=4, gridspec_kw={'width_ratios': [4, 0.2, 4, 0.2]}, figsize=(10, 4))
         if logNorm==True:
-            ax[0].contour(X[0], X[1], fit, cmap=plt.cm.hot, vmin=9e-1, vmax=9e-1+abs(pOpt[0])*1.2, norm=mpl.colors.LogNorm()) 
-            matrix = ax[0].imshow(image, aspect='auto', cmap=plt.cm.hot, vmin=9e-1, vmax=9e-1+abs(pOpt[0])*1.2, norm=mpl.colors.LogNorm())
-            residue = ax[2].imshow(image-fit, aspect='auto', cmap=plt.cm.hot, vmin=-50)
+            ax[0].contour(X[0], X[1], fit, cmap=plt.cm.hot, norm=mpl.colors.LogNorm(vmin=1e-1, vmax=1e-1+abs(pOpt[0])*1.2))
+            matrix = ax[0].imshow(image, aspect='auto', cmap=plt.cm.hot, norm=mpl.colors.LogNorm(vmin=1e-1, vmax=9e-1+abs(pOpt[0])*1.2))
+            residue = ax[2].imshow(image-fit, aspect='auto', cmap=plt.cm.hot)
         else:
             ax[0].contour(X[0], X[1], fit, cmap=plt.cm.hot, vmin=pOpt[-1], vmax=pOpt[-1]+abs(pOpt[0])*1.2) 
             matrix = ax[0].imshow(image, aspect='auto', cmap=plt.cm.hot, vmin=pOpt[-1], vmax=pOpt[-1]+abs(pOpt[0])*1.2)
-            residue = ax[2].imshow(image-fit, aspect='auto', cmap=plt.cm.hot, vmin=-50)
+            residue = ax[2].imshow(image-fit, aspect='auto', cmap=plt.cm.hot)
         ax[0].set_xlabel('x (pixels)')
         ax[0].set_ylabel('y (pixels)')
         ax[0].grid(False)
