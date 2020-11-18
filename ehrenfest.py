@@ -1,13 +1,37 @@
 import numpy as np
-from scipy.integrate import solve_ivp
+from scipy.integrate import solve_ivp, odeint
 from scipy.constants import *
+import multiprocessing as mp
 
 sigx = np.array([[0, 1],[1, 0]])
 sigz = np.array([[1, 0],[0,-1]])
 Id = np.eye(2)
 
-d_unit = 0.5
-t_unit = 16.5
+def omega1(t):
+    o1 = np.sqrt(1)
+    if type(t)==float or type(t)==np.float64:
+        return o1
+    else:
+        return o1*np.ones(len(t))
+
+def omega2(t):
+    o2 = np.sqrt(1)
+    if type(t)==float or type(t)==np.float64:
+        return o2
+    else:
+        return o2*np.ones(len(t))
+
+def omega3(t, t_ramp):
+    if type(t)==float or type(t)==np.float64:
+        if t<=t_ramp:
+            return np.sqrt(t/t_ramp)
+        else:
+            return 1
+    else:
+        conditions = [t<=t_ramp, t>t_ramp]
+        values = [lambda t: np.sqrt(t/t_ramp), lambda t:1]
+        return np.piecewise(t, conditions, values)
+
 
 class Ehrenfest():
     def __init__(self, omega1, omega2, omega3, omega1_args, omega2_args, omega3_args):
@@ -34,7 +58,7 @@ class Ehrenfest():
         H = (p**2/2)*np.eye(2) - np.dot(p*np.eye(2), A) + np.matmul(A, A)/2 + W + D
         return H
     '''
-    def _eom(self, t, y, p_x=0, p_y=0, d1=0, d2=0, d3=0):
+    def _eom(self, y, t, d1=0, d2=0, d3=0):
         alpha, beta = self.mixingAngles(t)
         A11x = (1+np.sin(beta)**2)
         A12x = 0.5*np.cos(alpha)*np.sin(2*beta)
@@ -55,9 +79,9 @@ class Ehrenfest():
         S22 = np.cos(alpha)**2 * (1 + np.cos(beta)**2) - A2[1, 1]/2
         S12 = 0.5*np.cos(alpha) * np.sin(2*beta) - A2[0, 1]/2
         D11 = (d1+d2)/2
-        D12 = np.sqrt(3)/6*(d1-d2)
+        D12 = (np.sqrt(3)/6)*(d1-d2)
         D22 = (d1+d2+4*d3)/6
-        #a_s = (S11 + S22) / 2 + (D11 + D22) / 2 + (A2(1, 1) + A2(2, 2)) / 4
+        #a_s = (S11 + S22) / 2 + (D11 + D22) / 2 + (A2[0, 0] + A2[1, 1]) / 4
         b_s = (S11 - S22) / 2 + (D11 - D22) / 2 + (A2[0, 0] - A2[1, 1]) / 4
         c_s = S12 + D12 + A2[0, 1] / 2
 
@@ -66,19 +90,19 @@ class Ehrenfest():
                 2*(bx*y[5]+by*y[6]-b_s)*y[3],
                 -2*(bx*y[5]+by*y[6]-b_s)*y[2]+2*(cx*y[5]+cy*y[6]-c_s)*y[4],
                 -2*(cx*y[5]+cy*y[6]-c_s)*y[3],
-                p_x,
-                p_y]
+                0,
+                0]
 
     def evolve(self, t, y0, T, N=1000, p_x=0, p_y=0, d1=-1, d2=1, d3=3):
-        d1 *= d_unit
-        d2 *= d_unit
-        d3 *= d_unit
         px = np.sqrt(T)*np.random.randn(N) + p_x
         py = np.sqrt(T)*np.random.randn(N) + p_y
-        result = np.zeros((N, len(y0), len(t)))
+        self.raw = np.zeros((N, len(y0), len(t)))
+        p = mp.Pool(4)
         for i in range(N):
-            result[i] = solve_ivp(self._eom,(t[0], t[-1]), y0, args=(px[i], py[i], d1, d2, d3), t_eval=t)['y'].reshape((len(y0), len(t)))
-        self.result = np.mean(result, axis=0)
+            y0[5], y0[6] = px[i], py[i]
+            y = odeint(self._eom, y0, t, args=(d1/2, d2/2, d3/2))
+            self.raw[i] = y[:,0], y[:,1], y[:,2], y[:,3], y[:,4], y[:,5], y[:,6]
+        self.result = np.mean(self.raw, axis=0)
         return self.result
 
     def bareStatePop(self, t):

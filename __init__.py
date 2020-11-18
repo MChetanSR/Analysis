@@ -4,4 +4,4 @@ from .fits import  multipleGaussian2D, multipleGaussian2DFit
 from .sigma import sigmaRed, sigmaBlue
 from .numberOfAtoms import numAtomsRed, numAtomsBlue
 from .spectrum import spectroscopy, spectroscopyFaddeva
-from .ehrenfest import Ehrenfest
+from .ehrenfest import Ehrenfest, omega1, omega2, omega3
