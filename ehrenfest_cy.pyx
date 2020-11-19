@@ -1,9 +1,11 @@
 import numpy as np
+cimport numpy as np
+cimport cython
 from scipy.integrate import solve_ivp, odeint
-from scipy.constants import *
+from libc.math import sin, cos, acos, atan, sqrt
 
-sigx = np.array([[0, 1],[1, 0]])
-sigz = np.array([[1, 0],[0,-1]])
+sigx = np.ndarray([[0, 1],[1, 0]])
+sigz = np.ndarray([[1, 0],[0,-1]])
 Id = np.eye(2)
 
 def omega1(t):
@@ -32,7 +34,7 @@ def omega3(t, t_ramp):
         return np.piecewise(t, conditions, values)
 
 
-class Ehrenfest():
+cdef class Ehrenfest():
     def __init__(self, omega1, omega2, omega3, omega1_args, omega2_args, omega3_args):
         self.omega1 = omega1
         self.omega1_args = omega1_args
@@ -57,14 +59,16 @@ class Ehrenfest():
         H = (p**2/2)*np.eye(2) - np.dot(p*np.eye(2), A) + np.matmul(A, A)/2 + W + D
         return H
     '''
-    def _eom(self, y, t, d1=0, d2=0, d3=0):
+    @cython.boundscheck(False)
+    def _eom(self, y, float t, float d1=0, float d2=0, float d3=0):
+        cdef double alpha, beta
         alpha, beta = self.mixingAngles(t)
-        A11x = (1+np.sin(beta)**2)
-        A12x = 0.5*np.cos(alpha)*np.sin(2*beta)
-        A22x = (np.cos(alpha)**2)*(1+np.cos(beta)**2)
-        A11y = np.cos(beta)**2
-        A12y = -0.5*np.cos(alpha)*np.sin(2*beta)
-        A22y = (np.cos(alpha)**2)*np.sin(beta)**2
+        cdef double A11x = (1+sin(beta)**2)
+        cdef double A12x = 0.5*cos(alpha)*sin(2*beta)
+        cdef double A22x = (cos(alpha)**2)*(1+cos(beta)**2)
+        cdef double A11y = cos(beta)**2
+        cdef double A12y = -0.5*cos(alpha)*sin(2*beta)
+        cdef double A22y = (cos(alpha)**2)*sin(beta)**2
         ax = (A11x + A22x) / 2
         bx = (A11x - A22x) / 2
         cx = A12x
