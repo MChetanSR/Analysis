@@ -5,3 +5,4 @@ from .sigma import sigmaRed, sigmaBlue
 from .numberOfAtoms import numAtomsRed, numAtomsBlue
 from .spectrum import spectroscopy, spectroscopyFaddeva
 from .ehrenfest import Ehrenfest, omega1, omega2, omega3
+from .tripodTools import detunings
