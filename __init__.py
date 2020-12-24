@@ -4,5 +4,6 @@ from .fits import  multipleGaussian2D, multipleGaussian2DFit
 from .sigma import sigmaRed, sigmaBlue
 from .numberOfAtoms import numAtomsRed, numAtomsBlue
 from .spectrum import spectroscopy, spectroscopyFaddeva
-from .ehrenfest import Ehrenfest, omega1, omega2, omega3
+from .ehrenfest import Ehrenfest, omegaConstant, omegaRamp, omegaGaussian, omegaDoubleGaussian
 from .tripodTools import detunings
+from .OBS import OBSolve, BStoDS

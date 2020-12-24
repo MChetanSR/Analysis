@@ -9,10 +9,11 @@ def gaussian(x, amplitude, xo, sigma, offset):
     g = offset + amplitude*np.exp(-(x-xo)**2/(2*sigma**2))
     return g
 
-def gaussianFit(array, p0=[], bounds=[(), ()], plot=True):
+def gaussianFit(x, array, p0=[], bounds=[(), ()], plot=True):
     """
     Fits the given array to an 1D-gaussian.
     Parameters:
+        x: 1darray, the argument values of the gaussian
         array: 1darray, the data to fit to the gaussian
         p0: ndarray, initial guess for the fit params in the form of
             [amplitude, xo, sigma, offset]. Default is None.
@@ -23,7 +24,6 @@ def gaussianFit(array, p0=[], bounds=[(), ()], plot=True):
         pCov: covarience parameters of the fit.
         Read scipy.optimize.curve_fit for details.
     """
-    x = np.arange(0,len(array))
     pOpt, pCov = curve_fit(gaussian, x, array, p0, bounds)
     if plot==True:
         pass
@@ -114,23 +114,23 @@ def multipleGaussian2DFit(image, p0, bounds, TOF, plot=True, cropSize=6, logNorm
     pOpt[2] = p0[2]-cropSize+pOpt[2]
     disQuanta = hbar*(2*pi/(689*nano*87*m_p))*TOF*milli
     dis = disQuanta*2.5/(16 * micro)
-    p0 = [[pOpt[0], pOpt[0]*0.4, pOpt[0]*0.2, pOpt[0]*0.02, pOpt[0]*0.02],
+    p0 = [[pOpt[0], pOpt[0]*0.4, pOpt[0]*0.3, pOpt[0]*0.02, pOpt[0]*0.02],
           [pOpt[1], pOpt[1]-dis, pOpt[1], pOpt[1]+dis, pOpt[1]-dis],
-          [pOpt[2], pOpt[2]-dis, pOpt[2]-2*dis, pOpt[2]-dis, pOpt[2]-3*dis],
+          [pOpt[2], pOpt[2]-dis, pOpt[2]-2*dis, pOpt[2]+dis, pOpt[2]-3*dis],
           [pOpt[3], pOpt[3], pOpt[3], pOpt[3], pOpt[3]],
           [pOpt[4], pOpt[4], pOpt[4], pOpt[4], pOpt[4]],
           [pOpt[5], pOpt[5], pOpt[5], pOpt[5], pOpt[5]],
           [pOpt[6], pOpt[6], pOpt[6], pOpt[6], pOpt[6]]]
     bounds = ([[pOpt[0]*0.5, pOpt[0]*0.001, pOpt[0]*0.001, -pOpt[0]*0.1, -pOpt[0]*0.1],
                [pOpt[1]-0.1, pOpt[1]-dis*1.3, pOpt[1]*0.7, pOpt[1]+dis*0.7, pOpt[1]-dis*1.3],
-               [pOpt[2]-0.1, pOpt[2]-dis*1.3, pOpt[2]-2*dis*1.3, pOpt[2]-dis*1.3, pOpt[2]-3*dis*1.2],
+               [pOpt[2]-0.1, pOpt[2]-dis*1.3, pOpt[2]-2*dis*1.3, pOpt[2]+dis*0.7, pOpt[2]-3*dis*1.2],
                [pOpt[3]*0.8, pOpt[3]*0.8, pOpt[3]*0.8, pOpt[3]*0.8, pOpt[3]*0.8],
                [pOpt[4]*0.8, pOpt[4]*0.8, pOpt[4]*0.8, pOpt[4]*0.8, pOpt[4]*0.8],
                [pOpt[5]-0.1, pOpt[5]-0.1, pOpt[5]-0.1, pOpt[5]-0.1, pOpt[5]-0.1],
                [pOpt[6]-100, pOpt[6]-100, pOpt[6]-100, pOpt[6]-100, pOpt[6]-100]],
-              [[pOpt[0]*1.1, pOpt[0]*0.7, pOpt[0]*0.7, pOpt[0]*0.2, pOpt[0]*0.2],
+              [[pOpt[0]*1.1, pOpt[0]*1.1, pOpt[0]*1.1, pOpt[0]*0.2, pOpt[0]*0.2],
                [pOpt[1]+0.1, pOpt[1]-dis*0.7, pOpt[1]*1.3, pOpt[1]+dis*1.3, pOpt[1]-dis*0.7],
-               [pOpt[2]+0.1, pOpt[2]-dis*0.7, pOpt[2]-2*dis*0.7, pOpt[2]-dis*0.7, pOpt[2]-3*dis*0.8],
+               [pOpt[2]+0.1, pOpt[2]-dis*0.7, pOpt[2]-2*dis*0.7, pOpt[2]+dis*1.3, pOpt[2]-3*dis*0.8],
                [pOpt[3]*1.2, pOpt[3]*1.2, pOpt[3]*1.2, pOpt[3]*1.2, pOpt[3]*1.2],
                [pOpt[4]*1.2, pOpt[4]*1.2, pOpt[4]*1.2, pOpt[4]*1.2, pOpt[4]*1.2],
                [pOpt[5]+0.2, pOpt[5]+0.2, pOpt[5]+0.2, pOpt[5]+0.2, pOpt[5]+0.2],
@@ -143,6 +143,7 @@ def multipleGaussian2DFit(image, p0, bounds, TOF, plot=True, cropSize=6, logNorm
             ax[0].contour(X[0], X[1], fit, cmap=plt.cm.hot, norm=mpl.colors.LogNorm(vmin=1e-1, vmax=1e-1+abs(pOpt[0])*1.2))
             matrix = ax[0].imshow(image, aspect='auto', cmap=plt.cm.hot, norm=mpl.colors.LogNorm(vmin=1e-1, vmax=9e-1+abs(pOpt[0])*1.2))
             residue = ax[2].imshow(image-fit, aspect='auto', cmap=plt.cm.hot)
+            ax[2].set_title('Residue:'+str(np.round(np.sum(np.sum(image-fit)), 5)))
         else:
             ax[0].contour(X[0], X[1], fit, cmap=plt.cm.hot, vmin=pOpt[-1], vmax=pOpt[-1]+abs(pOpt[0])*1.2) 
             matrix = ax[0].imshow(image, aspect='auto', cmap=plt.cm.hot, vmin=pOpt[-1], vmax=pOpt[-1]+abs(pOpt[0])*1.2)
