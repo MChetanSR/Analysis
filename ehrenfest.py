@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.integrate import solve_ivp, odeint
-from scipy.constants import *
+
 
 
 sigx = np.array([[0, 1],[1, 0]])
@@ -37,7 +37,7 @@ def omegaDoubleGaussian(t,amp, Tc1, Tc2, sigma):
         result = amp*(np.exp(-(t-Tc1)**2/(4*sigma**2))+np.exp(-(t-Tc2)**2/(4*sigma**2)))
     return result
 
-class Ehrenfest():
+class EhrenfestSU2():
     def __init__(self, omega1, omega2, omega3, omega1_args, omega2_args, omega3_args):
         self.omega1 = omega1
         self.omega1_args = omega1_args
@@ -118,7 +118,19 @@ class Ehrenfest():
         P2 = (1+sz)/2*np.cos(beta)**2+(1-sz)/2*np.cos(alpha)**2*np.sin(beta)**2-sx*np.cos(alpha)*np.cos(beta)*np.sin(beta)
         P3 = (1-sz)/2*np.sin(alpha)**2
         return np.array([P1, P2, P3])
-    
+
+    def bareStatePop2(self, t, result):
+        alpha, beta = self.mixingAngles(t)
+        n = len(t)
+        P1 = np.zeros(n)
+        P2 = np.zeros(n)
+        P3 = np.zeros(n)
+        for i in range(n):
+            sx, sy, sz = result[2:5, i]
+            P1[i] = (1 + sz) / 2 *np.sin(beta[i]) ** 2 + (1 - sz) / 2 *np.cos(alpha[i]) ** 2*np.cos(beta[i])**2+sx*np.cos(alpha[i])*np.cos(beta[i])*np.sin(beta[i])
+            P2[i] = (1 + sz) / 2 * np.cos(beta[i]) ** 2 + (1 - sz) / 2*np.cos(alpha[i]) **2*np.sin(beta[i])**2-sx*np.cos(alpha[i])*np.cos(beta[i])*np.sin(beta[i])
+            P3[i] = (1 - sz) / 2 * np.sin(alpha[i]) ** 2
+        return np.array([P1, P2, P3])
     def spatialDistributions(self,t):
         alpha, beta = self.mixingAngles(t)
         x, y, sx, sy, sz, px, py = self.raw[:,]
