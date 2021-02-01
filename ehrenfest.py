@@ -54,14 +54,7 @@ class EhrenfestSU2():
         alpha = np.arccos(abs(omega_3)/omega)
         beta = np.arctan2(abs(omega_1), abs(omega_2))
         return alpha, beta
-    '''
-    def Hamiltonian(self, t, p=0, d1=0, d2=0, d3=0):
-        A = np.eye(2)
-        W = np.eye(2)
-        D = np.eye(2)
-        H = (p**2/2)*np.eye(2) - np.dot(p*np.eye(2), A) + np.matmul(A, A)/2 + W + D
-        return H
-    '''
+
     def _eom(self, y, t, d1=0, d2=0, d3=0):
         alpha, beta = self.mixingAngles(t)
         A11x = (1+np.sin(beta)**2)
@@ -100,8 +93,8 @@ class EhrenfestSU2():
     def evolve(self, t, y0, T, N=1000, p_x=0, p_y=0, d1=-1, d2=1, d3=3):
         px = np.sqrt(T)*np.random.randn(N) + p_x
         py = np.sqrt(T)*np.random.randn(N) + p_y
-        x_0 = np.sqrt(T/(30/9600)**2)*np.random.randn(N)
-        y_0 = np.sqrt(T/(60/9600)**2)*np.random.randn(N)
+        #x_0 = np.sqrt(T/(30/9600)**2)*np.random.randn(N)
+        #y_0 = np.sqrt(T/(60/9600)**2)*np.random.randn(N)
         self.raw = np.zeros((N, len(y0), len(t)))
         for i in range(N):
             y0[0], y0[1] = 0, 0#x_0[i], y_0[i]
@@ -121,16 +114,14 @@ class EhrenfestSU2():
 
     def bareStatePop2(self, t, result):
         alpha, beta = self.mixingAngles(t)
-        n = len(t)
-        P1 = np.zeros(n)
-        P2 = np.zeros(n)
-        P3 = np.zeros(n)
-        for i in range(n):
-            sx, sy, sz = result[2:5, i]
-            P1[i] = (1 + sz) / 2 *np.sin(beta[i]) ** 2 + (1 - sz) / 2 *np.cos(alpha[i]) ** 2*np.cos(beta[i])**2+sx*np.cos(alpha[i])*np.cos(beta[i])*np.sin(beta[i])
-            P2[i] = (1 + sz) / 2 * np.cos(beta[i]) ** 2 + (1 - sz) / 2*np.cos(alpha[i]) **2*np.sin(beta[i])**2-sx*np.cos(alpha[i])*np.cos(beta[i])*np.sin(beta[i])
-            P3[i] = (1 - sz) / 2 * np.sin(alpha[i]) ** 2
+        x, y, sx, sy, sz, px, py = result
+        P1 = (1 + sz) / 2 * np.sin(beta) ** 2 + (1 - sz) / 2 * np.cos(alpha) ** 2 * np.cos(beta) ** 2 + sx * np.cos(
+            alpha) * np.cos(beta) * np.sin(beta)
+        P2 = (1 + sz) / 2 * np.cos(beta) ** 2 + (1 - sz) / 2 * np.cos(alpha) ** 2 * np.sin(beta) ** 2 - sx * np.cos(
+            alpha) * np.cos(beta) * np.sin(beta)
+        P3 = (1 - sz) / 2 * np.sin(alpha) ** 2
         return np.array([P1, P2, P3])
+
     def spatialDistributions(self,t):
         alpha, beta = self.mixingAngles(t)
         x, y, sx, sy, sz, px, py = self.raw[:,]

@@ -3,7 +3,6 @@ from scipy.optimize import curve_fit
 from scipy.constants import *
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-plt.style.use('seaborn')
 
 def gaussian(x, amplitude, xo, sigma, offset):
     g = offset + amplitude*np.exp(-(x-xo)**2/(2*sigma**2))
@@ -121,20 +120,20 @@ def multipleGaussian2DFit(image, p0, bounds, TOF, plot=True, cropSize=6, logNorm
           [pOpt[4], pOpt[4], pOpt[4], pOpt[4], pOpt[4]],
           [pOpt[5], pOpt[5], pOpt[5], pOpt[5], pOpt[5]],
           [pOpt[6], pOpt[6], pOpt[6], pOpt[6], pOpt[6]]]
-    bounds = ([[pOpt[0]*0.5, pOpt[0]*0.001, pOpt[0]*0.001, -pOpt[0]*0.1, -pOpt[0]*0.1],
+    bounds = ([[pOpt[0]*0.4, pOpt[0]*0.00, pOpt[0]*0.001, -pOpt[0]*0.0001, -pOpt[0]*0.0001],
                [pOpt[1]-0.1, pOpt[1]-dis*1.3, pOpt[1]*0.7, pOpt[1]+dis*0.7, pOpt[1]-dis*1.3],
                [pOpt[2]-0.1, pOpt[2]-dis*1.3, pOpt[2]-2*dis*1.3, pOpt[2]+dis*0.7, pOpt[2]-3*dis*1.2],
                [pOpt[3]*0.8, pOpt[3]*0.8, pOpt[3]*0.8, pOpt[3]*0.8, pOpt[3]*0.8],
                [pOpt[4]*0.8, pOpt[4]*0.8, pOpt[4]*0.8, pOpt[4]*0.8, pOpt[4]*0.8],
                [pOpt[5]-0.1, pOpt[5]-0.1, pOpt[5]-0.1, pOpt[5]-0.1, pOpt[5]-0.1],
-               [pOpt[6]-100, pOpt[6]-100, pOpt[6]-100, pOpt[6]-100, pOpt[6]-100]],
-              [[pOpt[0]*1.1, pOpt[0]*1.1, pOpt[0]*1.1, pOpt[0]*0.2, pOpt[0]*0.2],
+               [pOpt[6]-150, pOpt[6]-150, pOpt[6]-150, pOpt[6]-150, pOpt[6]-150]],
+              [[pOpt[0]*1.1, pOpt[0]*1.2, pOpt[0]*1.2, pOpt[0]*0.1, pOpt[0]*0.1],
                [pOpt[1]+0.1, pOpt[1]-dis*0.7, pOpt[1]*1.3, pOpt[1]+dis*1.3, pOpt[1]-dis*0.7],
                [pOpt[2]+0.1, pOpt[2]-dis*0.7, pOpt[2]-2*dis*0.7, pOpt[2]+dis*1.3, pOpt[2]-3*dis*0.8],
                [pOpt[3]*1.2, pOpt[3]*1.2, pOpt[3]*1.2, pOpt[3]*1.2, pOpt[3]*1.2],
                [pOpt[4]*1.2, pOpt[4]*1.2, pOpt[4]*1.2, pOpt[4]*1.2, pOpt[4]*1.2],
                [pOpt[5]+0.2, pOpt[5]+0.2, pOpt[5]+0.2, pOpt[5]+0.2, pOpt[5]+0.2],
-               [pOpt[6]+20, pOpt[6]+20, pOpt[6]+20, pOpt[6]+20, pOpt[6]+20]])
+               [pOpt[6]+150, pOpt[6]+150, pOpt[6]+150, pOpt[6]+150, pOpt[6]+150]])
     pOpt, pCov = curve_fit(multipleGaussian2D, X, image.reshape((Nx*Ny)), p0=np.array(p0).reshape((35)), bounds=np.array(bounds).reshape((2, 35)))
     fit = multipleGaussian2D(X, *pOpt).reshape(Ny, Nx)
     if plot == True:

@@ -7,8 +7,8 @@ from libc.math cimport sqrt, cos, sin, acos, atan, abs
 cimport numpy as np
 import numpy as np
 import cython
-from scipy.integrate import odeint, solve_ivp
-from multiprocessing import Process
+from scipy.integrate import odeint
+
 
 cdef np.ndarray sigx = np.array([[0, 1], [1, 0]], dtype=np.float)
 cdef np.ndarray sigz = np.array([[1, 0], [0, -1]], dtype=np.float)
@@ -26,6 +26,11 @@ cpdef double omegaRamp(double t, double t_ramp):
 cpdef double omegaGaussian(double t, double amp, double Tc, double sigma):
     return amp*np.exp(-(t-Tc)**2/(4*sigma**2))
 
+cpdef np.ndarray Map(fun, vec, args, dtype=np.float):
+    result = np.zeros(len(vec), dtype=dtype)
+    for i, v in enumerate(vec):
+        result[i] = fun(v, *args)
+    return result
 
 cdef class EhrenfestSU2:
     cdef dict __dict__
@@ -49,21 +54,34 @@ cdef class EhrenfestSU2:
             omega_2 = self.omega2(t[i], *self.omega2_args)
             omega_3 = self.omega3(t[i], *self.omega3_args)
             omega = sqrt(abs(omega_1) ** 2 + abs(omega_2) ** 2 + abs(omega_3) ** 2)
-            alpha[i] = acos(abs(omega_3)/omega)
-            beta[i] = atan(abs(omega_1)/abs(omega_2))
+            alpha[i] = acos(abs(omega_3)/abs(omega))
+            beta[i] = np.arctan2(abs(omega_1), abs(omega_2))
         return (alpha, beta)
+
+    @cython.boundscheck(False)
+    def mixingAnglesDerivative(self, double tt):
+        t_step = self.t[1]-self.t[0]
+        mixing_angles_1 = self.mixingAngles(np.array([tt - t_step / 2]))
+        mixing_angles_2 = self.mixingAngles(np.array([tt + t_step / 2]))
+        cdef double alpha1 = mixing_angles_1[0][0]
+        cdef double alpha2 = mixing_angles_2[0][0]
+        cdef double beta1 = mixing_angles_1[1][0]
+        cdef double beta2 = mixing_angles_2[1][0]
+        return ((alpha2-alpha1)/t_step, (beta2-beta1)/t_step)
+
 
     @cython.boundscheck(False)
     def _eom(self, np.ndarray[np.float_t, ndim=1, negative_indices=False] y, double t, double d1 = 0, double d2 = 0, double d3 = 0):
         mixing_angles = self.mixingAngles(np.array([t]))
         cdef double alpha = mixing_angles[0][0]
         cdef double beta = mixing_angles[1][0]
-        cdef double A11x = (1 + sin(beta) ** 2)
-        cdef double A12x = 0.5 * cos(alpha) * sin(2 * beta)
-        cdef double A22x = (cos(alpha) ** 2) * (1 + cos(beta) ** 2)
-        cdef double A11y = cos(beta) ** 2
-        cdef double A12y = -0.5 * cos(alpha) * sin(2 * beta)
-        cdef double A22y = (cos(alpha) ** 2) * sin(beta) ** 2
+        alphaPrime, betaPrime = self.mixingAnglesDerivative(t)
+        cdef double A11x = (1 + cos(beta) ** 2)
+        cdef double A12x = 0.5* cos(alpha) * sin(2*beta)
+        cdef double A22x = (cos(alpha)**2) * (1+sin(beta)**2)
+        cdef double A11y = sin(beta) ** 2
+        cdef double A12y = -0.5 * cos(alpha) * sin(2*beta)
+        cdef double A22y = (cos(alpha) ** 2) * cos(beta)**2
         cdef double a_x = (A11x + A22x) / 2.0
         cdef double b_x = (A11x - A22x) / 2.0
         cdef double c_x = A12x
@@ -73,8 +91,8 @@ cdef class EhrenfestSU2:
         cdef np.ndarray Ax = (a_x * Id + b_x * sigz + c_x * sigx)
         cdef np.ndarray Ay = (a_y * Id + b_y * sigz + c_y * sigx)
         cdef np.ndarray A2 = np.matmul(Ax, Ax) + np.matmul(Ay, Ay)
-        cdef double S11 = (sin(beta) ** 2 + 1) - A2[0, 0] / 2.0
-        cdef double S22 = cos(alpha) ** 2 * (1 + cos(beta) ** 2) - A2[1, 1] / 2.0
+        cdef double S11 = (cos(beta) ** 2 + 1) - A2[0, 0] / 2.0
+        cdef double S22 = cos(alpha) ** 2 * (1 + sin(beta) ** 2) - A2[1, 1] / 2.0
         cdef double S12 = 0.5 * cos(alpha) * sin(2 * beta) - A2[0, 1] / 2.0
         cdef double D11 = (d1 + d2) / 2.0
         cdef double D12 = (sqrt(3) / 6) * (d1 - d2)
@@ -82,7 +100,6 @@ cdef class EhrenfestSU2:
         # a_s = (S11 + S22) / 2 + (D11 + D22) / 2 + (A2[0, 0] + A2[1, 1]) / 4
         cdef double b_s = (S11 - S22) / 2.0 + (D11 - D22) / 2.0 + (A2[0, 0] - A2[1, 1]) / 4.0
         cdef double c_s = S12 + D12 + A2[0, 1] / 2.0
-
         return np.array([y[5] - (a_x + b_x * y[4] + c_x * y[2]),
                          y[6] - (a_y + b_y * y[4] + c_y * y[2]),
                          2 * (b_x * y[5] + b_y * y[6] - b_s) * y[3],
@@ -95,8 +112,8 @@ cdef class EhrenfestSU2:
     def evolve(self, np.ndarray[double, ndim=1, negative_indices=False] t, np.ndarray[double, ndim=1, negative_indices=False] y0, double T, int N = 1000, double p_x = 0, double p_y = 0, double d1 = -1, double d2 = 1, double d3 = 3):
         cdef np.ndarray[double, ndim=1, negative_indices=False] px = sqrt(T) * np.random.randn(N) + p_x
         cdef np.ndarray[double, ndim=1, negative_indices=False] py = sqrt(T) * np.random.randn(N) + p_y
-        cdef np.ndarray[double, ndim=1, negative_indices=False] x_0 = sqrt(T / (30/9600.0) ** 2) * np.random.randn(N)
-        cdef np.ndarray[double, ndim=1, negative_indices=False] y_0 = sqrt(T / (60/9600.0) ** 2) * np.random.randn(N)
+        #cdef np.ndarray[double, ndim=1, negative_indices=False] x_0 = sqrt(T / (30/9600.0) ** 2) * np.random.randn(N)
+        #cdef np.ndarray[double, ndim=1, negative_indices=False] y_0 = sqrt(T / (60/9600.0) ** 2) * np.random.randn(N)
         cdef np.ndarray[double, ndim=3, negative_indices=False] raw = np.zeros((N, len(y0), len(t)), dtype=np.float)
         #cdef np.ndarray[double, ndim=2, negative_indices=False] arg = np.zeros((N, len(y0)), dtype=np.float)
         cdef np.ndarray[double, ndim=2, negative_indices=False] y
@@ -105,7 +122,7 @@ cdef class EhrenfestSU2:
         self.d2 = d2/2
         self.d3 = d3/2
         for i in range(N):
-            y0[0], y0[1] =  x_0[i], y_0[i]
+            #y0[0], y0[1] =  x_0[i], y_0[i]
             y0[5], y0[6] = px[i], py[i]
             y = odeint(self._eom, y0, self.t, args=(self.d1, self.d2, self.d3))
             raw[i] = y[:, 0], y[:, 1], y[:, 2], y[:, 3], y[:, 4], y[:, 5], y[:, 6]#'''
@@ -118,8 +135,8 @@ cdef class EhrenfestSU2:
     def bareStatePop(self, np.ndarray[np.float_t, ndim=1, negative_indices=False] t):
         alpha, beta = self.mixingAngles(t)
         x, y, sx, sy, sz, px, py = self.result
-        P1 = (1 + sz) / 2 * sin(beta) ** 2 + (1 - sz) / 2 * cos(alpha) ** 2 * cos(beta) ** 2 + sx * cos(alpha) * cos(beta) * sin(beta)
-        P2 = (1 + sz) / 2 * cos(beta) ** 2 + (1 - sz) / 2 * cos(alpha) ** 2 * sin(beta) ** 2 - sx * cos(alpha) * cos(beta) * sin(beta)
+        P1 = (1 + sz) / 2 * cos(beta) ** 2 + (1 - sz) / 2 * cos(alpha) ** 2 * sin(beta) ** 2 + sx * cos(alpha) * cos(beta) * sin(beta)
+        P2 = (1 + sz) / 2 * sin(beta) ** 2 + (1 - sz) / 2 * cos(alpha) ** 2 * cos(beta) ** 2 - sx * cos(alpha) * cos(beta) * sin(beta)
         P3 = (1 - sz) / 2 * sin(alpha) ** 2
         return np.array([P1, P2, P3])
 
@@ -132,8 +149,8 @@ cdef class EhrenfestSU2:
         cdef np.ndarray P3 = np.zeros(n)
         for i in range(n):
             sx, sy, sz = result[2:5, i]
-            P1[i] = (1 + sz) / 2 * sin(beta[i]) ** 2 + (1 - sz) / 2 * cos(alpha[i]) ** 2 * cos(beta[i]) ** 2 + sx * cos(alpha[i]) * cos(beta[i]) * sin(beta[i])
-            P2[i] = (1 + sz) / 2 * cos(beta[i]) ** 2 + (1 - sz) / 2 * cos(alpha[i]) ** 2 * sin(beta[i]) ** 2 - sx * cos(alpha[i]) * cos(beta[i]) * sin(beta[i])
+            P1[i] = (1 + sz) / 2 * cos(beta[i]) ** 2 + (1 - sz) / 2 * cos(alpha[i]) ** 2 * sin(beta[i]) ** 2 + sx * cos(alpha[i]) * cos(beta[i]) * sin(beta[i])
+            P2[i] = (1 + sz) / 2 * sin(beta[i]) ** 2 + (1 - sz) / 2 * cos(alpha[i]) ** 2 * cos(beta[i]) ** 2 - sx * cos(alpha[i]) * cos(beta[i]) * sin(beta[i])
             P3[i] = (1 - sz) / 2 * sin(alpha[i]) ** 2
         return np.array([P1, P2, P3])
 

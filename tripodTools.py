@@ -2,6 +2,7 @@ from math import sin, cos
 import numpy as np
 import pandas as pd
 
+
 def detunings(p, theta):
     d_rec = 0.004796
     sig_plus = 80

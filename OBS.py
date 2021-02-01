@@ -1,6 +1,6 @@
 import numpy as np
-from scipy.integrate import solve_ivp
-
+from scipy.integrate import solve_ivp, odeint
+from scipy.constants import *
 
 # ------------------------------------------
 # Functions
@@ -63,3 +63,26 @@ class OBSolve(object):
         sol = solve_ivp(self.__f, (t0, tf), rho0, method='RK45', t_eval=self.t)
         self.rho = sol.y
         return self.rho, sol
+
+    def solveFiniteT(self, initialCondition, T, Na):
+        d1, d2, d3 = self.HArgs[-1]
+        a = Boltzmann*nano/(87*m_p)
+        k = 2*pi/(689*micro)
+        deltas1 = k*np.sqrt(a*T)*np.random.randn(Na)
+        deltas2 = k*np.sqrt(a*T)*np.random.randn(Na)
+        t0 = self.t[0]
+        tf = self.t[-1]
+        rho0 = initialCondition
+        result = np.zeros((Na, len(rho0), len(rho0), len(self.t)))
+        for i in range(len(deltas1)):
+            self.HArgs[-1] = [d1-deltas1[i], d2-deltas2[i], d3+deltas1[i]]
+            t0 = self.t[0]
+            tf = self.t[-1]
+            rho0 = initialCondition
+            sol = solve_ivp(self.__f, (t0, tf), rho0, method='RK45', t_eval=self.t)
+            result[i] = sol.y
+        self.HArgs[-1] = [d1, d2, d3]
+        return np.mean(result, axis=0)
+
+
+

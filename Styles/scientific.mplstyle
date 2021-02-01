@@ -1,0 +1,40 @@
+axes.titlesize : 12
+axes.labelsize : 12
+axes.labelcolor : black
+axes.facecolor : white
+axes.prop_cycle: cycler('color', ['1287A8', '9A2617', '829356', '64B5CD', 'BCA136'])
+axes.edgecolor : black
+axes.spines.top: True
+axes.spines.right: True
+axes.spines.left: True
+axes.spines.bottom: True
+errorbar.capsize : 2
+
+axes.grid : False
+grid.color: white
+grid.linewidth: 0.5
+grid.alpha: 0.3
+
+lines.linewidth : 1.2
+lines.markersize : 5
+lines.markeredgecolor: black
+lines.markeredgewidth: 0.4
+
+xtick.color : black
+xtick.labelsize : 9
+ytick.color : black
+ytick.labelsize : 9
+
+legend.frameon : False
+legend.fontsize : 11
+legend.handlelength : 0.5
+
+mathtext.fontset : stix
+font.family : sans-serif
+font.sans-serif : Helvetica
+font.weight: light
+
+
+figure.figsize : 4.98, 3.486
+figure.autolayout: True
+figure.facecolor: white
