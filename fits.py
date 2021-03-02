@@ -57,7 +57,7 @@ def gaussian2DFit(image, p0=None, bounds=[(), ()], plot=True):
     x = np.linspace(0, Nx, Nx, endpoint=False)
     y = np.linspace(0, Ny, Ny, endpoint=False)
     X = np.meshgrid(x, y)
-    if (p0==None and bounds==None):
+    if (p0==None and bounds==[(),()]):
         p0 = [0.5, Nx/2, Ny/2, Nx/4, Ny/4, 0, 0]
         bounds = ([-0.5, 0.4*Nx, 0.4*Ny, 0.0*Nx, 0.0*Ny, -0.1, -0.5],\
              [10, 0.6*Nx, 0.6*Ny, 0.7*Nx, 0.7*Ny, 0.1, 1])
@@ -69,17 +69,19 @@ def gaussian2DFit(image, p0=None, bounds=[(), ()], plot=True):
         ax[0].plot(x, gaussian2D(np.meshgrid(x,int(pOpt[2])), *pOpt), 'k')
         ax[0].set_xlabel('x (pixels)')
         ax[0].set_ylabel('Optical depth')
-        ax[0].set_ylim(pOpt[6]-0.1, pOpt[6]+pOpt[0]*1.2)
+        
         ax[1].plot(image[:, int(pOpt[1])], 'r.')
         ax[1].plot(y, gaussian2D(np.meshgrid(int(pOpt[1]),y), *pOpt), 'k')
         ax[1].set_xlabel('y (pixels)')
-        ax[1].set_ylim(pOpt[6]-0.1, pOpt[6]+pOpt[0]*1.2)
-        ax[2].contour(X[0], X[1], fit, cmap=plt.cm.hot, vmin=pOpt[-1]-0.1, vmax=pOpt[-1]+abs(pOpt[0])*1.2)
-        matrix=ax[2].imshow(image, cmap=plt.cm.hot, vmin=pOpt[-1]-0.1, vmax=pOpt[-1]+abs(pOpt[0])*1.2)
+        if pOpt[0]<0.2:
+            ax[0].set_ylim(pOpt[6]-pOpt[0]*1.2, pOpt[6]+pOpt[0]*1.2)
+            ax[1].set_ylim(pOpt[6]-pOpt[0]*1.2, pOpt[6]+pOpt[0]*1.2)
+        ax[2].contour(X[0], X[1], fit, cmap=plt.cm.hot, vmin=pOpt[6]-pOpt[0]*0.12, vmax=pOpt[-1]+abs(pOpt[0])*1.2)
+        matrix=ax[2].imshow(image, cmap=plt.cm.hot, vmin=pOpt[6]-pOpt[0]*0.12, vmax=pOpt[-1]+abs(pOpt[0])*1.2)
         ax[2].set_xlabel('x (pixels)')
         ax[2].set_ylabel('y (pixels)')
         ax[2].grid(False)
-        ax[3].imshow(image-fit, cmap=plt.cm.hot, vmin=pOpt[-1]-0.1, vmax=pOpt[-1]+abs(pOpt[0])*1.2)
+        ax[3].imshow(image-fit, cmap=plt.cm.hot, vmin=pOpt[6]-pOpt[0]*0.12, vmax=pOpt[-1]+abs(pOpt[0])*1.2)
         ax[3].set_xlabel('x (pixels)')
         ax[3].set_ylabel('y (pixels)')
         ax[3].grid(False)
