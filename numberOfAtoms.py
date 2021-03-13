@@ -21,7 +21,7 @@ def numAtomsBlue(image, delta, imaging_params, s=0, plot=True):
          sigma_x, sigma_y, amplitude, x0, y0)
     '''
     scat = sigmaBlue(delta, 87, s)
-    pOpt, pCov = gaussian2DFit(image, p0=None, bounds=None, plot=plot)
+    pOpt, pCov = gaussian2DFit(image, p0=None, bounds=[(), ()], plot=plot)
     amp, xo, yo, sigma_x, sigma_y, theta, offset = pOpt
     pixelSize = imaging_params['pixelSize']
     magnification = imaging_params['magnification']
@@ -32,7 +32,7 @@ def numAtomsBlue(image, delta, imaging_params, s=0, plot=True):
     Ndensity = NGaussian/((2*pi*sigma_x*sigma_y*(pixelSize*binning/magnification)**2)**(3/2))
     return NGaussian, NPixel, Ndensity, sigma_x, sigma_y, amp, xo, yo
 
-def numAtomsRed(image, delta, imaging_params, s=0, plot=True,p0=None,bounds=None):
+def numAtomsRed(image, delta, imaging_params, s=0, plot=True,p0=None,bounds=[(), ()]):
     """
     Calculates number of atoms from red shadow imaging.
     Parameters:

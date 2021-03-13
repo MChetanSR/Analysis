@@ -7,3 +7,4 @@ from .spectrum import spectroscopy, spectroscopyFaddeva
 from .ehrenfest_cython import EhrenfestSU2, omegaConstant, omegaRamp, omegaGaussian, Map #, omegaDoubleGaussian
 from .tripodTools import detunings
 from .OBS import OBSolve, BStoDS
+from .PicoMatTools import PSD, RIN, picoMatRead

@@ -2,7 +2,7 @@ axes.titlesize : 12
 axes.labelsize : 12
 axes.labelcolor : black
 axes.facecolor : white
-axes.prop_cycle: cycler('color', ['1287A8', '9A2617', '829356', '64B5CD', 'BCA136'])
+axes.prop_cycle: cycler('color', ['1287A8', '9A2617', '098B04', 'E98D08', 'E1D301'])
 axes.edgecolor : black
 axes.spines.top: True
 axes.spines.right: True
