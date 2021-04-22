@@ -24,9 +24,29 @@ cpdef double omegaRamp(double t, double t_ramp):
         return 1
 
 cpdef double omegaGaussian(double t, double amp, double Tc, double sigma):
-    return amp*np.exp(-(t-Tc)**2/(4*sigma**2))
+    '''
+    A function to output gaussian pulse in time with given center and sigma.
+    Parameters: 
+        t: double, time at which the value on gaussian is needed
+        amp: double, amplitude of the gaussian
+        Tc: double, center of the gaussian
+        sigma: double, sigma of the gaussian
+    Returns:
+        a double, the value at time t on the gaussian with given parameters
+    '''
+    return amp*np.exp(-(t-Tc)**2/(2*sigma**2))
 
 cpdef np.ndarray Map(fun, vec, args, dtype=np.float):
+    '''
+    Maps a function to a vector.
+    Parameters:
+        fun: function to be mapped
+        vec: 1d-array, the vector to be mapped to the function
+        args: tuple, secondary arguments to the function
+        dtype: Default numpy.float, the data type of the elements of the array
+    Returns:
+        1d-array with elements of given dtype mapped by the specified function.
+    '''
     result = np.zeros(len(vec), dtype=dtype)
     for i, v in enumerate(vec):
         result[i] = fun(v, *args)

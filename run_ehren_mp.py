@@ -11,16 +11,16 @@ plt.style.use('./Styles/Helvetica_bright.mplstyle')
 def run_ehrenfest(t_r, px, py):
     t_unit = 16.576
     y0 = np.array([0, 0, 0, 0, -1, 0, 0], dtype=float)
-    t_vec = np.linspace(0, 150/t_unit, 400, dtype=float)
+    t_vec = np.linspace(0, 100/t_unit, 400, dtype=float)
     t_ramp = float(t_r)/t_unit
     e = EhrenfestSU2(omegaConstant, omegaConstant, omegaRamp, (), (), (t_ramp,))
-    x = e.evolve(t_vec, y0, T=0.1, N=250, p_x=float(px), p_y=float(py), d1=-1, d2=1,d3=3)
+    x = e.evolve(t_vec, y0, T=0.13, N=250, p_x=float(px), p_y=float(py), d1=-1, d2=1,d3=3)
     np.savetxt('result'+str(os.getpid())+'.txt', x)
 
 def run_ehrenfest_sfet(sigma, factor):
     t_unit = 16.576
     y0 = np.array([0, 0, 0, 0, -1, 0, 0], dtype=float)
-    t_vec = np.linspace(0, 100/t_unit, 200, dtype=float)
+    t_vec = np.linspace(0, 100/t_unit, 400, dtype=float)
     tc1 = 3*sigma
     tc2 = tc1+factor*sigma
     tc3 = tc2+factor*sigma
@@ -57,7 +57,7 @@ if __name__=='__main__':
     r = np.loadtxt('Result.txt')
     t_unit = 16.576
     y0 = np.array([0, 0, 0, 0, -1, 0, 0], dtype=float)
-    t_vec = np.linspace(0, 100/t_unit, 200, dtype=float)
+    t_vec = np.linspace(0, 100/t_unit, 400, dtype=float)
     '''
     sigma = sigma/t_unit
     tc1 = 3 * sigma

@@ -71,7 +71,7 @@ def spectroscopy(ODimages, f, d=4,loss=False, plot=True, fileNum='', savefig=Fal
         plt.tight_layout()
         if savefig==True:
             plt.savefig('SpectroscopyResultFor'+fileNum+'.png', transparent=True)
-    return pOpt # amp, centre, gamma, offset
+    return pOpt, index # amp, centre, gamma, offset
 
 
 def bv(f, f0, b0, T, s):

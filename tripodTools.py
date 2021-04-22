@@ -12,6 +12,15 @@ def detunings(p, theta):
     return pd.DataFrame([[sig_plus-d_1, sig_minus-d_3, pi_f-d_2],[-d_1, -d_3, -d_2]],
                  ['Freq.', '$\delta_{ij}$'], ['$\sigma_+$', '$\sigma_-$', '$\pi$'])
 
+def detunings2(p_x, p_y):
+    d_rec = 0.004796
+    sig_plus = 80
+    sig_minus = 80.024
+    pi_f = 80.012
+    d_1, d_2, d_3 = (-1-p_x*2)*d_rec, (1-p_y*2)*d_rec, (3+p_x*2)*d_rec
+    return pd.DataFrame([[sig_plus-d_1, sig_minus-d_3, pi_f-d_2],[-d_1, -d_3, -d_2]],
+                 ['Freq.', '$\delta_{ij}$'], ['$\sigma_+$', '$\sigma_-$', '$\pi$'])
+
 def BStoDS(*args):
     '''
     Change of basis matrix from bare state basis {0, 1, 2, 3} to dressed basis {D1, D2, B1, B2}
