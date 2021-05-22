@@ -14,18 +14,19 @@ def picoMatRead(filePath, channels=['A']):
     return t, result
 
 
-def PSD(path, channel='A'):
+def PSD(path, avg=30, channels=['A']):
     files = os.listdir(path)
     first = loadmat(os.path.join(path, files[0]))
     tStep = first['Tinterval']
     N = first['Length'][0,0]
     frequencies = fftfreq(N, tStep)[0,:int(N/2)]
-    inLoop = []
-    monitor = []
-    for f in files[:-2]:
+    result = np.zeros((len(channels), int(N/2)))
+    for f in files[:avg]:
         data = loadmat(os.path.join(path, f))
-        inLoop.append(2*abs(fft(data[channel][:,0])[:N//2]/N)**2)
-    return frequencies, np.mean(np.array(inLoop), axis=0)
+        for i, ch in enumerate(channels):
+            result[i] += 2*abs(fft(data[ch][:,0])[:N//2]/N)**2
+    result /= avg
+    return frequencies, result
 
 
 def RIN(path, channel='A'):
