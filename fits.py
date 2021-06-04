@@ -129,7 +129,7 @@ def multipleGaussian2DFit(image, p0, bounds, TOF, plot=True, cropSize=6, logNorm
                [pOpt[4]*0.8, pOpt[4]*0.8, pOpt[4]*0.8, pOpt[4]*0.8, pOpt[4]*0.8],
                [pOpt[5]-0.1, pOpt[5]-0.1, pOpt[5]-0.1, pOpt[5]-0.1, pOpt[5]-0.1],
                [pOpt[6]-150, pOpt[6]-150, pOpt[6]-150, pOpt[6]-150, pOpt[6]-150]],
-              [[pOpt[0]*1.2, pOpt[0]*1.2, pOpt[0]*1.2, pOpt[0]*0.1, pOpt[0]*0.1],
+              [[pOpt[0]*1.5, pOpt[0]*1.5, pOpt[0]*1.5, pOpt[0]*0.4, pOpt[0]*0.4],
                [pOpt[1]+0.1, pOpt[1]-dis*0.7, pOpt[1]*1.3, pOpt[1]+dis*1.3, pOpt[1]-dis*0.7],
                [pOpt[2]+0.1, pOpt[2]-dis*0.7, pOpt[2]-2*dis*0.7, pOpt[2]+dis*1.3, pOpt[2]-3*dis*0.8],
                [pOpt[3]*1.2, pOpt[3]*1.2, pOpt[3]*1.2, pOpt[3]*1.2, pOpt[3]*1.2],
