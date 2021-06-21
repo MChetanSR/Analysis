@@ -171,8 +171,6 @@ class ShadowImage(object):
         plt.tight_layout()
         return None
         
-        
-    '''
     def comment(self, comment):
         """
         Adds comment to the tif image under the ImageDescription tag
@@ -191,9 +189,9 @@ class ShadowImage(object):
         try:
             r = self.tags['ImageDescription']
         except KeyError:
-            r = ''
+            r = 'No description to show!'
         return r
-    '''
+
     def redProbeIntensity(self, params, plot=False):
         """
         Returns intensity(micro Watt/cm^2), power(W), waist_x, waist_y

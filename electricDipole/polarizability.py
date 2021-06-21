@@ -1,6 +1,5 @@
 from scipy.constants import * # all physical constants
 import numpy as np # numpy for array manipulations
-
 # look for sympy documentation for the arguments
 from sympy.physics.wigner import wigner_6j, wigner_3j
 from sympy.physics.wigner import clebsch_gordan as CG
@@ -22,11 +21,46 @@ class ket():
         self.F = F
         self.m = mF
 
+    def is_ket(self):
+        return True
+
+    def is_bra(self):
+        return False
+
+    def __rmul__(self, other):
+        if other.is_bra():
+            if (other.n == self.n) and \
+               (other.L == self.L) and \
+               (other.S == self.S) and \
+               (other.J == self.J) and \
+               (other.I == self.I) and \
+               (other.F == self.F) and \
+               (other.m == self.m):
+                return 1
+            else:
+                return 0
+        else:
+            raise TypeError('Multiplication defined only with a bra!')
+
     def __str__(self):
         # string representation for easy viewing
         return '|n={0}, L={1}, S={2}, J={3}, I={4}, F={5}, mF={6}>'\
                 .format(self.n, self.L, self.S, self.J, self.I, self.F, self.m)
 
+class bra(ket):
+    def __init__(self, n, L, S, J, I, F, mF):
+        super().__init__(n, L, S, J, I, F, mF)
+
+    def is_ket(self):
+        return False
+
+    def is_bra(self):
+        return True
+
+    def __str__(self):
+        # string representation for easy viewing
+        return '<n={0}, L={1}, S={2}, J={3}, I={4}, F={5}, mF={6}|'\
+                .format(self.n, self.L, self.S, self.J, self.I, self.F, self.m)
 
 
 def alphaTensor(F, K, eps):

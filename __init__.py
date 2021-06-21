@@ -8,3 +8,4 @@ from .ehrenfest_cython import EhrenfestSU2, omegaConstant, omegaRamp, omegaGauss
 from .tripodTools import detunings, detunings2 
 from .OBS import OBSolve, BStoDS
 from .PicoMatTools import PSD, RIN, picoMatRead
+from .SpinInDickeBasis import *
