@@ -1,11 +1,10 @@
 import numpy as np
 #import matplotlib.pyplot as plt
 #import scipy.linalg as ln
-from scipy.sparse import csr_matrix
-#import sympy as sy
+from scipy.sparse import csr_matrix, kron
+from scipy.sparse import identity as Id
 
-
-def S_p(s):
+def S_m(s):
     '''
     Matrix representation of ladder raising operator for spin.
     Args:
@@ -19,11 +18,11 @@ def S_p(s):
         m_s = np.arange(-s, s+1, 1)
         rows = np.arange(0,2*s,1)
         cols = np.arange(1,2*s+1,1)
-        values = np.array([np.sqrt(s*(s+1)-m*(m+1)) for m in m_s[:-1]])
+        values = np.array([np.sqrt(s*(s+1)-m*(m-1)) for m in m_s[1:]])
         spar = csr_matrix((values, (rows, cols)), shape=(int(2*s+1), int(2*s+1)))
         return spar
 
-def S_m(s):
+def S_p(s):
     '''
     Matrix representation of ladder lowering operator for spin.
     Args:
@@ -37,7 +36,7 @@ def S_m(s):
         m_s = np.arange(-s, s+1, 1)
         rows = np.arange(1,2*s+1,1)
         cols = np.arange(0,2*s,1)
-        values = np.array([np.sqrt(s*(s+1)-m*(m-1)) for m in m_s[1:]])
+        values = np.array([np.sqrt(s*(s+1)-m*(m+1)) for m in m_s[:-1]])
         spar = csr_matrix((values, (rows, cols)), shape=(int(2*s+1), int(2*s+1)))
         return spar
 
@@ -78,6 +77,21 @@ def S_z(s):
         values = np.array([m for m in m_s[:]])
         spar = csr_matrix((values, (rows, cols)), shape=(int(2*s+1), int(2*s+1)))
         return spar
+
+def SpinAngularMomenta(I, L, S):
+    I_x = kron(kron(S_x(I), Id(2 * L + 1)), Id(2 * S + 1))
+    I_y = kron(kron(S_y(I), Id(2 * L + 1)), Id(2 * S + 1))
+    I_z = kron(kron(S_z(I), Id(2 * L + 1)), Id(2 * S + 1))
+    L_x = kron(kron(Id(2 * I + 1), S_x(L)), Id(2 * S + 1))
+    L_y = kron(kron(Id(2 * I + 1), S_y(L)), Id(2 * S + 1))
+    L_z = kron(kron(Id(2 * I + 1), S_z(L)), Id(2 * S + 1))
+    s_x = kron(kron(Id(2 * I + 1), Id(2 * L + 1)), S_x(S))
+    s_y = kron(kron(Id(2 * I + 1), Id(2 * L + 1)), S_y(S))
+    s_z = kron(kron(Id(2 * I + 1), Id(2 * L + 1)), S_z(S))
+    IOperator = (I_x, I_y, I_z)
+    LOperator = (L_x, L_y, L_z)
+    SOperator = (s_x, s_y, s_z)
+    return IOperator, LOperator, SOperator
 
 def a(N=5):
     '''
