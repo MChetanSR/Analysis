@@ -70,7 +70,7 @@ def spectroscopy(ODimages, f, d=4,loss=False, plot=True, fileNum='', savefig=Fal
         ax[1].set_title(r'$f_{start}$ = '+str(f[0])+', $f_{step}$ = '+str(step)+', file = '+fileNum)
         plt.tight_layout()
         if savefig==True:
-            plt.savefig('SpectroscopyResultFor'+fileNum+'.png', transparent=True)
+            plt.savefig('spectroscopy results/SpectroscopyResultFor'+fileNum+'.png', transparent=True)
     return pOpt, index # amp, centre, gamma, offset
 
 

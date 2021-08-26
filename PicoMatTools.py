@@ -26,6 +26,7 @@ def PSD(path, avg=30, channels=['A']):
         for i, ch in enumerate(channels):
             result[i] += 2*abs(fft(data[ch][:,0])[:N//2]/N)**2
     result /= avg
+    result[0] = result[0]/2
     return frequencies, result
 
 
