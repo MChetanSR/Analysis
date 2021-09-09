@@ -37,7 +37,7 @@ def gaussian2D(X, amplitude, xo, yo, sigma_x, sigma_y, theta, offset):
     g = offset + amplitude*np.exp(-(a*((x-xo)**2) + b*(x-xo)*(y-yo) + c*((y-yo)**2)))
     return g.ravel()
 
-def gaussian2DFit(image, p0=None, bounds=[(), ()], plot=True):
+def gaussian2DFit(image, p0=None, bounds=[(), ()], plot=True, title=''):
     """
     Fits an image with a 2D gaussian.
     Parameters:
@@ -61,16 +61,27 @@ def gaussian2DFit(image, p0=None, bounds=[(), ()], plot=True):
         p0 = [0.5, Nx/2, Ny/2, Nx/4, Ny/4, 0, 0]
         bounds = ([-0.5, 0.4*Nx, 0.4*Ny, 0.0*Nx, 0.0*Ny, -0.1, -0.5],\
              [10, 0.6*Nx, 0.6*Ny, 0.7*Nx, 0.7*Ny, 0.1, 1])
+    else:
+        p0 = p0
+        bounds = bounds
     pOpt, pCov = curve_fit(gaussian2D, X, image.reshape((Nx*Ny)), p0, bounds=bounds)
     fit = gaussian2D(X, *pOpt).reshape(Ny, Nx)
     if plot==True:
         f, ax = plt.subplots(nrows=1, ncols=5, gridspec_kw={'width_ratios': [4,4,4,4,0.2]}, figsize=(16, 4))
-        ax[0].plot(image[int(pOpt[2])], 'r.')
+        if int(pOpt[2])>=len(y):
+            ax[0].plot(image[-1], 'r.')
+        elif int(pOpt[2])<0:
+            ax[0].plot(image[0], 'r.')
+        else:
+            ax[0].plot(image[int(pOpt[2]), :], 'r.')
         ax[0].plot(x, gaussian2D(np.meshgrid(x,int(pOpt[2])), *pOpt), 'k')
         ax[0].set_xlabel('x (pixels)')
-        ax[0].set_ylabel('Optical depth')
-        
-        ax[1].plot(image[:, int(pOpt[1])], 'r.')
+        if int(pOpt[1])>=len(x):
+            ax[1].plot(image[:, -1], 'r.')
+        elif int(pOpt[1])<0:
+            ax[1].plot(image[:, 0], 'r.')
+        else:
+            ax[1].plot(image[:, int(pOpt[1])], 'r.')
         ax[1].plot(y, gaussian2D(np.meshgrid(int(pOpt[1]),y), *pOpt), 'k')
         ax[1].set_xlabel('y (pixels)')
         if pOpt[0]<0.2:
@@ -86,6 +97,7 @@ def gaussian2DFit(image, p0=None, bounds=[(), ()], plot=True):
         ax[3].set_ylabel('y (pixels)')
         ax[3].grid(False)
         f.colorbar(matrix, cax=ax[4])
+        f.suptitle(str(title))
         plt.tight_layout()
     return pOpt, pCov
 
@@ -164,7 +176,7 @@ def threeGaussian2DFit(image, p0, bounds, TOF, plot=True, cropSize=6, logNorm=Fa
 
 
 def multipleGaussian2D(X, *args):
-    amplitudes, xos, yos, sigma_xs, sigma_ys, thetas, offsets = np.array(args).reshape((7,7))
+    amplitudes, xos, yos, sigma_xs, sigma_ys, thetas, offsets = np.array(args).reshape((7,5))
     x = X[0]
     y = X[1]
     g = 0
@@ -189,28 +201,28 @@ def multipleGaussian2DFit(image, p0, bounds, TOF, plot=True, cropSize=6, logNorm
     pOpt[2] = p0[2]-cropSize+pOpt[2]
     disQuanta = hbar*(2*pi/(689*nano*87*m_p))*TOF*milli
     dis = disQuanta*2.5/(16*micro)
-    p0 = [[pOpt[0], pOpt[0]*0.4, pOpt[0]*0.3, pOpt[0]*0.02, pOpt[0]*0.1, pOpt[0]*0.1, pOpt[0]*0.1],
-          [pOpt[1], pOpt[1]-dis, pOpt[1], pOpt[1]+dis, pOpt[1]-dis, pOpt[1], pOpt[1]+dis],
-          [pOpt[2], pOpt[2]-dis, pOpt[2]-2*dis, pOpt[2]+dis, pOpt[2]-3*dis, pOpt[2]-4*dis, pOpt[1]-3*dis],
-          [pOpt[3], pOpt[3], pOpt[3], pOpt[3], pOpt[3], pOpt[3], pOpt[3]],
-          [pOpt[4], pOpt[4], pOpt[4], pOpt[4], pOpt[4], pOpt[4], pOpt[4]],
-          [pOpt[5], pOpt[5], pOpt[5], pOpt[5], pOpt[5], pOpt[5], pOpt[5]],
-          [pOpt[6], pOpt[6], pOpt[6], pOpt[6], pOpt[6], pOpt[6], pOpt[6]]]
-    bounds = ([[pOpt[0]*0.0, pOpt[0]*0.0, pOpt[0]*0.0, pOpt[0]*0.0, pOpt[0]*0.0, pOpt[0]*0.0, pOpt[0]*0.0],
-               [pOpt[1]-0.1, pOpt[1]-dis*1.3, pOpt[1]*0.7, pOpt[1]+dis*0.7, pOpt[1]-dis*1.3, pOpt[1]-0.1, pOpt[1]+0.7*dis],
-               [pOpt[2]-0.1, pOpt[2]-dis*1.3, pOpt[2]-2*dis*1.3, pOpt[2]+dis*0.7, pOpt[2]-3*dis*1.3, pOpt[2]-4*dis*1.3, pOpt[1]-3*dis*1.3],
-               [pOpt[3]*0.8, pOpt[3]*0.8, pOpt[3]*0.8, pOpt[3]*0.8, pOpt[3]*0.8, pOpt[3]*0.8, pOpt[3]*0.8],
-               [pOpt[4]*0.8, pOpt[4]*0.8, pOpt[4]*0.8, pOpt[4]*0.8, pOpt[4]*0.8, pOpt[4]*0.8, pOpt[4]*0.8],
-               [pOpt[5]-0.1, pOpt[5]-0.1, pOpt[5]-0.1, pOpt[5]-0.1, pOpt[5]-0.1, pOpt[5]-0.1, pOpt[5]-0.1],
-               [pOpt[6]-150, pOpt[6]-150, pOpt[6]-150, pOpt[6]-150, pOpt[6]-150, pOpt[6]-150, pOpt[6]-150]],
-              [[pOpt[0]*1.5, pOpt[0]*1.5, pOpt[0]*1.5, pOpt[0]*0.5, pOpt[0]*0.5, pOpt[0]*0.5, pOpt[0]*0.5],
-               [pOpt[1]+0.1, pOpt[1]-dis*0.7, pOpt[1]*1.3, pOpt[1]+dis*1.3, pOpt[1]-dis*0.7, pOpt[1]+0.1, pOpt[1]+1.3*dis],
-               [pOpt[2]+0.1, pOpt[2]-dis*0.7, pOpt[2]-2*dis*0.7, pOpt[2]+dis*1.3, pOpt[2]-3*dis*0.8, pOpt[2]-4*dis*0.7, pOpt[1]-3*dis*0.7],
-               [pOpt[3]*1.2, pOpt[3]*1.2, pOpt[3]*1.2, pOpt[3]*1.2, pOpt[3]*1.2, pOpt[3]*1.2, pOpt[3]*1.2],
-               [pOpt[4]*1.2, pOpt[4]*1.2, pOpt[4]*1.2, pOpt[4]*1.2, pOpt[4]*1.2, pOpt[4]*1.2, pOpt[4]*1.2],
-               [pOpt[5]+0.2, pOpt[5]+0.2, pOpt[5]+0.2, pOpt[5]+0.2, pOpt[5]+0.2, pOpt[5]+0.2, pOpt[5]+0.2],
-               [pOpt[6]+150, pOpt[6]+150, pOpt[6]+150, pOpt[6]+150, pOpt[6]+150, pOpt[6]+150, pOpt[6]+150]])
-    pOpt, pCov = curve_fit(multipleGaussian2D, X, image.reshape((Nx*Ny)), p0=np.array(p0).reshape((49)), bounds=np.array(bounds).reshape((2, 49)))
+    p0 = [[pOpt[0], pOpt[0]*0.4, pOpt[0]*0.3, pOpt[0]*0.02, pOpt[0]*0.1],
+          [pOpt[1], pOpt[1]-dis, pOpt[1], pOpt[1]-dis, pOpt[1]],
+          [pOpt[2], pOpt[2]-dis, pOpt[2]-2*dis, pOpt[2]-3*dis, pOpt[2]-4*dis],
+          [pOpt[3], pOpt[3], pOpt[3], pOpt[3], pOpt[3]],
+          [pOpt[4], pOpt[4], pOpt[4], pOpt[4], pOpt[4]],
+          [pOpt[5], pOpt[5], pOpt[5], pOpt[5], pOpt[5]],
+          [pOpt[6], pOpt[6], pOpt[6], pOpt[6], pOpt[6]]]
+    bounds = ([[pOpt[0]*0.0, pOpt[0]*0.0, pOpt[0]*0.0, pOpt[0]*0.0, pOpt[0]*0.0],
+               [pOpt[1]-0.1, pOpt[1]-dis*1.1, pOpt[1]*0.9, pOpt[1]-dis*1.1, pOpt[1]-0.1],
+               [pOpt[2]-0.1, pOpt[2]-dis*1.1, pOpt[2]-2*dis*1.1, pOpt[2]-3*dis*1.1, pOpt[2]-4*dis*1.1],
+               [pOpt[3]*0.9, pOpt[3]*0.9, pOpt[3]*0.9, pOpt[3]*0.9, pOpt[3]*0.9],
+               [pOpt[4]*0.9, pOpt[4]*0.9, pOpt[4]*0.9, pOpt[4]*0.9, pOpt[4]*0.9],
+               [pOpt[5]-0.1, pOpt[5]-0.1, pOpt[5]-0.1, pOpt[5]-0.1, pOpt[5]-0.1],
+               [pOpt[6]-150, pOpt[6]-150, pOpt[6]-150, pOpt[6]-150, pOpt[6]-150]],
+              [[pOpt[0]*1.5, pOpt[0]*1.5, pOpt[0]*1.5, pOpt[0]*0.5, pOpt[0]*0.5],
+               [pOpt[1]+0.1, pOpt[1]-dis*0.9, pOpt[1]*1.1, pOpt[1]-dis*0.9, pOpt[1]+0.1],
+               [pOpt[2]+0.1, pOpt[2]-dis*0.9, pOpt[2]-2*dis*0.9, pOpt[2]-3*dis*0.9, pOpt[2]-4*dis*0.9],
+               [pOpt[3]*1.1, pOpt[3]*1.1, pOpt[3]*1.1, pOpt[3]*1.1, pOpt[3]*1.1],
+               [pOpt[4]*1.1, pOpt[4]*1.1, pOpt[4]*1.1, pOpt[4]*1.1, pOpt[4]*1.1],
+               [pOpt[5]+0.2, pOpt[5]+0.2, pOpt[5]+0.2, pOpt[5]+0.2, pOpt[5]+0.2],
+               [pOpt[6]+150, pOpt[6]+150, pOpt[6]+150, pOpt[6]+150, pOpt[6]+150]])
+    pOpt, pCov = curve_fit(multipleGaussian2D, X, image.reshape((Nx*Ny)), p0=np.array(p0).reshape((35)), bounds=np.array(bounds).reshape((2, 35)))
     fit = multipleGaussian2D(X, *pOpt).reshape(Ny, Nx)
     if plot == True:
         f, ax = plt.subplots(nrows=1, ncols=4, gridspec_kw={'width_ratios': [4, 0.2, 4, 0.2]}, figsize=(10, 4))

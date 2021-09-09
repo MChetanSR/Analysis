@@ -1,2 +1,5 @@
 .ipynb_checkpoints
 .idea
+*.pyd
+__pycache__/*.pyc
+Result.txt

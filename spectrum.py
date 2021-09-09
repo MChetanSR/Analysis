@@ -1,4 +1,4 @@
-from .fits import lorentzian, lorentzianFit, gaussian2DFit
+from .fits import lorentzian, lorentzianFit, gaussian2DFit, gaussianFit
 from .sigma import sigmaRed
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
@@ -102,6 +102,7 @@ def spectroscopyFaddeva(ODimages, f, imaging_params, plot=True, fileNum='', save
         pOpt = (amp, centre, gamma, offset) of the lorentzian fit
     '''
     n = len(ODimages)
+    f_smooth = np.linspace(f[0], f[-1] + (f[1] - f[0]), 100, endpoint=False)
     if n!=len(f):
         raise ValueError('No of images and no. of  frequencies are not equal')
     step = np.round(f[1]-f[0], 3)
@@ -115,11 +116,10 @@ def spectroscopyFaddeva(ODimages, f, imaging_params, plot=True, fileNum='', save
         amp, xo, yo, sx, sy, theta, offset = gaussian2DFit(ODimages[i], p0, bounds, plot=False)[0]
         index.append(amp)
     maxODAt = np.argmax(index)
-    s = imaging_params['saturation']
     try:
         amp, xo, yo, sx, sy, theta, offset = gaussian2DFit(ODimages[maxODAt], p0, bounds, plot=False)[0]
-        b = ([min(f), 0.5, 0.01,  70], [max(f), 300, 50,  80])
-        pOpt, pCov = bvFit(f, np.array(index), p0=[f[maxODAt], max(index)*10, 2, 76], bounds=b)
+        b = ([min(f), 0.5, 0.01,  1], [max(f), 300, 50,  50])
+        pOpt, pCov = bvFit(f, np.array(index), p0=[f[maxODAt], max(index)*10, 2, 10], bounds=b)
     except RuntimeError:
         pOpt = [0, 0, 0, 0]
     T = pOpt[2]
@@ -135,7 +135,7 @@ def spectroscopyFaddeva(ODimages, f, imaging_params, plot=True, fileNum='', save
         fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(12,4))
         i = ax[0].imshow(ODimages[maxODAt])
         scalebar = AnchoredSizeBar(ax[0].transData, 2, str(np.round(2*sizeFactor/1e-6, 1))+r'$\mu$m',
-                                   'lower right', color='black', frameon=False,size_vertical=0.2)
+                                   'lower right', color='white', frameon=False,size_vertical=0.2)
 
         ax[0].add_artist(scalebar)
         ax[0].set_title('N='+str(N)+'$\\times 10^6$, Max. OD at: '+str(maxODAt))
@@ -143,7 +143,7 @@ def spectroscopyFaddeva(ODimages, f, imaging_params, plot=True, fileNum='', save
         ax[0].grid(False)
         ax[1].plot(f, index, 'o')
         if pOpt!=[]:
-            ax[1].plot(f, bv(f, *pOpt), 'k', label=r'T='+str(np.round(T, 1))+'$\mu$K \n'+
+            ax[1].plot(f_smooth, bv(f_smooth, *pOpt), 'k', label=r'T='+str(np.round(T, 1))+'$\mu$K \n'+
                                                   '$b_0(0)$='+str(np.round(pOpt[1], 2))+'\n'+
                                                   '$f_0$ = '+str(np.round(pOpt[0], 3))+'\n'+
                                                   's = '+str(np.round(pOpt[3], 2)))
@@ -153,5 +153,5 @@ def spectroscopyFaddeva(ODimages, f, imaging_params, plot=True, fileNum='', save
         ax[1].set_title(r'$f_{start}$ = '+str(f[0])+', $f_{step}$ = '+str(step)+', file = '+fileNum)
         plt.tight_layout()
         if savefig==True:
-            plt.savefig('SpectroscopyResultFor'+fileNum+'.png', transparent=True)
+            plt.savefig('spectroscopy results/SpectroscopyFaddevaResultFor'+fileNum+'.png', transparent=True)
     return pOpt # f0, b0, vavg

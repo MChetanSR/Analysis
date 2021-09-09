@@ -204,7 +204,7 @@ class ShadowImage(object):
         y = self.im.height
         x = self.im.width
         imConstant = params['binning']*params['pixelSize']/params['magnification']
-        pOpt, pCov = gaussian2DFit(probeImage, p0=[4000, x/2, y/2, x/2, y/2, np.pi/4, 500], plot=plot)
+        pOpt, pCov = gaussian2DFit(probeImage, p0=[60000, x/2, y/2, x/2, y/2, np.pi/4, 2000], plot=plot)
         totalCount = np.sum(np.sum(probeImage))
         wx = abs(2*pOpt[3]*imConstant*100) # in cm
         wy = abs(2*pOpt[4]*imConstant*100) # in cm
