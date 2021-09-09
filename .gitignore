@@ -2,4 +2,5 @@
 .idea
 *.pyd
 __pycache__/*.pyc
+build
 Result.txt
