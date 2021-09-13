@@ -77,8 +77,26 @@ def S_z(s):
         values = np.array([m for m in m_s[:]])
         spar = csr_matrix((values, (rows, cols)), shape=(int(2*s+1), int(2*s+1)))
         return spar
+def Spin(s):
+    '''
+    Matrix representation of quantum mechanical spin, s
+    Args:
+        s: int or half int, the spin quantum number.
+    Returns:
+        a tuple of sparse matrices corresponding to S_x, S_y, S_z
+    '''
+    return S_x(s), S_y(s), S_z(s)
 
 def SpinAngularMomenta(I, L, S):
+    '''
+    Args:
+        I: nuclear spin quantum number of the atomic state
+        L: orbital angular momentum quantum number
+        S: spin quantum number of the state
+    Returns:
+        a tuple of angular momenta (each a tuple of components) in tensor product space,
+        ((Ix, Iy, Iz), (Lx, Ly, Lz), (Sx, Sy, Sz))
+    '''
     I_x = kron(kron(S_x(I), Id(2 * L + 1)), Id(2 * S + 1))
     I_y = kron(kron(S_y(I), Id(2 * L + 1)), Id(2 * S + 1))
     I_z = kron(kron(S_z(I), Id(2 * L + 1)), Id(2 * S + 1))
@@ -130,20 +148,3 @@ def a_dag(N=5):
         values = np.array([np.sqrt(n+1) for n in n_n[:-1]])
         spar = csr_matrix((values, (rows, cols)), shape=(int(N), int(N)))
         return spar
-
-class bosonic(object):
-    def __init__(self, N):
-        self.N = N
-
-    def operators(self):
-        N = self.N
-        n_n = np.arange(0, N, 1)
-        rows = np.arange(0, N-1, 1)
-        cols = np.arange(1, N, 1)
-        values = np.array([np.sqrt(n) for n in n_n[1:]])
-        spar1 = csr_matrix((values, (rows, cols)), shape=(int(N), int(N)))
-        rows = np.arange(1, N, 1)
-        cols = np.arange(0, N-1, 1)
-        values = np.array([np.sqrt(n+1) for n in n_n[:-1]])
-        spar2 = csr_matrix((values, (rows, cols)), shape=(int(N), int(N)))
-        return spar1, spar2
