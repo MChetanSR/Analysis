@@ -7,18 +7,19 @@ from scipy.constants import *
 def numAtomsBlue(image, delta, imaging_params, s=0, plot=True):
     '''
     Calculates number of atoms from blue shadow imaging.
+
     Parameters:
         image: a numpy.ndarray, OD from the experiment
-        delta: a float,detuning of the probe, 2*(AOMFreq-69) MHz
+        delta: a float, detuning of the probe, 2*(AOMFreq-69) MHz
         imaging_params: a dictionary with keys as follows
             ex: {'binning':2, 'magnification': 2.2, 'pixelSize': 16*micro }
         s(optional): a float, saturation parameter of the probe. Default is 0.
         plot(optional): a bool, flag to plot the gaussian fits if True.
             Default is True.
     Returns:
-        a tuple: (number of atoms from 2D gaussian fit,
-         number of atoms from pixel sum, number density from gaussian fit,
-         sigma_x, sigma_y, amplitude, x0, y0)
+        a tuple, (number of atoms from 2D gaussian fit,
+        number of atoms from pixel sum, number density from gaussian fit,
+        sigma_x, sigma_y, amplitude, x0, y0)
     '''
     scat = sigmaBlue(delta, 87, s)
     pOpt, pCov = gaussian2DFit(image, p0=None, bounds=[(), ()], plot=plot)
@@ -35,6 +36,7 @@ def numAtomsBlue(image, delta, imaging_params, s=0, plot=True):
 def numAtomsRed(image, delta, imaging_params, s=0, plot=True,p0=None,bounds=[(), ()]):
     """
     Calculates number of atoms from red shadow imaging.
+
     Parameters:
         image: a numpy.ndarray, OD from the experiment
         delta: float, detuning of the probe in kHz
@@ -44,9 +46,9 @@ def numAtomsRed(image, delta, imaging_params, s=0, plot=True,p0=None,bounds=[(),
         plot(optional): a bool, a flag to plot the gaussian fits if True.
             Default is True.
     Returns:
-        a tuple: (number of atoms from 2D gaussian fit,
-         number of atoms from pixel sum, number density from gaussian fit,
-         sigma_x, sigma_y, amplitude, x0, y0)
+        a tuple, (number of atoms from 2D gaussian fit,
+        number of atoms from pixel sum, number density from gaussian fit,
+        sigma_x, sigma_y, amplitude, x0, y0)
     """
     scat = sigmaRed(delta, s)
     pOpt, pCov = gaussian2DFit(image, p0=p0, bounds=bounds, plot=plot)
