@@ -3,13 +3,13 @@ import math
 
 def sigmaBlue(delta, A, s=0):
     """
-    Calculates the scattering cross-section of Sr for 1^S_0--->1^P_1 taking into
+    Calculates the scattering cross-section of Sr for :math:`^1S_0 \\rightarrow ^1P_1` taking into
     account the isotope shift w.r.t. A=88 isotope and hyperfine levels present
     in the excited state.
 
     Parameters:
         delta: float, detuning of the probe w.r.t the reference in MHz.
-        s: float, saturation parameter of the probe, I/I_s.
+        s: float, saturation parameter of the probe, :math:`I/I_s`.
         A: int, mass number of the isotope.
     Returns:
         A float, Scattering cross-section.
@@ -40,12 +40,12 @@ def sigmaBlue(delta, A, s=0):
 
 def sigmaRed(delta, s=0):
     """
-    Calculates the scattering cross-section of Sr for 1^S_0--->3^P_1 taking saturation
+    Calculates the scattering cross-section of Sr for :math:`^1S_0 \\rightarrow ^3P_1` taking saturation
     into account.
 
     Parameters:
         delta: float, detuning of the probe w.r.t the reference in kHz.
-        s: float, saturation parameter of the probe, I/I_s.
+        s: float, saturation parameter of the probe, :math:`I/I_s`.
     Returns:
         A float, Scattering cross-section.
     Comment:
