@@ -1,4 +1,4 @@
-from .fits import lorentzian, lorentzianFit, gaussian2DFit, gaussianFit
+from .fits import lorentzian, lorentzianFit, gaussian2DFit
 from .sigma import sigmaRed
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
@@ -11,17 +11,18 @@ import numpy as np
 def spectroscopy(ODimages, f, d=4,loss=False, plot=True, fileNum='', savefig=False):
     '''
     Adds the OD of the pixels around the centre and uses the sum to plot the spectrum of the scan
-    corresponding to the given frequencies
-    Args:
+    corresponding to the given frequencies. This is then fit to a lorentzian to find the center and linewidth.
+
+    Parameters:
         ODimages: ODimages extracted from ShadowImaging sequences
         f: array of frequencies for which the scan is done
         d: int, to specify size of the image area to consider around the centre of OD
         plot: bool, default is True to specify if the data has to be plotted
-        fileNum: string, the image file number for which the analysis is done
+        fileNum: string, file number (plus any additional description) of the image file for which the analysis is done.
         savefig: bool, default is False. Change it to true if you want to save the spectrum as .png
 
     Returns:
-        pOpt = (amp, centre, gamma, offset) of the lorentzian fit
+        a tuple, (amp, centre, gamma, offset) of the lorentzian fit
     '''
     n = len(ODimages)
     f_smooth = np.linspace(f[0], f[-1]+(f[1]-f[0]), 100, endpoint=False)
@@ -90,16 +91,18 @@ def bvFit(f, array, p0=None, bounds=None):
 def spectroscopyFaddeva(ODimages, f, imaging_params, plot=True, fileNum='', savefig=False):
     '''
     Fits od images to a gaussian and uses its amplitude to plot the spectrum of the scan
-    corresponding to the given frequencies. This is fit to b_v(\delta) from Chang Chi's thesis.
-    Args:
+    corresponding to the given frequencies. This is fit to :math:`b_v(\delta)` from Chang Chi's thesis to extract
+    temperature in addition to center.
+
+    Parameters:
         ODimages: ODimages extracted from ShadowImaging sequences
         f: array of frequencies for which the scan is done
         plot: bool, default is True to specify if the data has to be plotted
-        fileNum: string, the image file number for which the analysis is done
+        fileNum: string, file number (plus any additional description) of the image file for which the analysis is done.
         savefig: bool, default is False. Change it to true if you want to save the spectrum as .png
 
     Returns:
-        pOpt = (amp, centre, gamma, offset) of the lorentzian fit
+        a tuple, (centre, :math:`b_0`, T, s) of fit to :math:`b_v(\delta)`
     '''
     n = len(ODimages)
     f_smooth = np.linspace(f[0], f[-1] + (f[1] - f[0]), 100, endpoint=False)

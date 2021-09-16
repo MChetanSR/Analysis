@@ -11,7 +11,7 @@ from scipy.constants import *
 
 class ShadowImage(object):
     """
-    The main class to extract relavent information from the shadow image
+    The main class to extract relevant information from the shadow imaging
     sequences that are obtained in the experiment. The multiple image sequence
     consists of the shadow or the absorption image, image of the incident probe
     and the image of the background for as many runs of the experiment.
@@ -194,7 +194,7 @@ class ShadowImage(object):
 
     def redProbeIntensity(self, params, plot=False):
         """
-        Returns intensity(micro Watt/cm^2), power(W), waist_x, waist_y
+        Returns intensity(:math:`\mu W/cm^2`), power(:math:`W`), waists :math:`w_x` and :math:`w_x`.
         """
         try:
             probeImage = self.averagedIncidence[0]
@@ -251,11 +251,18 @@ class FluorescenceImage(object):
     """
     The main class to extract relevant information from the fluorescence image
     sequences that are obtained in the experiment. The multiple image sequence
-    consists of fluorescence signal from the atomic cloud for as many runs of the
-    experiment.
+    consists of fluorescence signal image and a background image acquired immediately
+    after the signal from the atomic cloud for as many runs of the experiment.
     
     Parameters:
         filePath: str, Path to the multiple-image file
+
+    Attributes:
+        filePath: str, Path to the multiple-image file
+        im: PIL.TiffImagePlugin.TiffImageFile or AndorSifFile._SifFrames
+        n: int, total number of data = number of images/3
+        frames: ndarray, all the frames in the image file
+        tags: dict, the named tag dictionary of the TiffImage or properties of sif file
     """
     def __init__(self, filePath):
         self.filePath = filePath
@@ -291,8 +298,10 @@ class FluorescenceImage(object):
     def fluorescence(self, xSpan, ySpan):
         """
         Returns the fluorence calculated from the FluorencenceImage as an ndarray.
-        xSpan: a list containing the range of pixels of the image in x direction.
-        ySpan: a list containing the range of pixels of the image in y direction.
+
+        Parameters:
+            xSpan: a list containing the range of pixels of the image in x direction.
+            ySpan: a list containing the range of pixels of the image in y direction.
         """
         self.fluorescence = np.zeros((self.n, self.im.height, self.im.width))
         for i in range(self.n):
@@ -306,7 +315,13 @@ class FluorescenceImage(object):
         """
         Calculates the average signal with nAveraging being the Superloop
         in the experiment and finds the fluorescence after the averaging.
-        Returns an ndarray of length equal to Serie in the experiment.
+
+        Parameters:
+            nAveraging: :type: int, the repetitions of the experiment
+            truncate: :type: tuple or list, the super loops to be ignored.
+
+        Returns:
+            an ndarray of length equal to Serie in the experiment.
         """
         self.nAveraging = nAveraging
         self.nSamples = int(self.n/nAveraging)
@@ -326,7 +341,9 @@ class FluorescenceImage(object):
         """
         Calculates and plots the average signal with nAveraging being the Superloop
         in the experiment.
-        Returns None.
+
+        Returns:
+             None.
         """
         fl = self.averagedSignal(nAveraging, truncate)
         w = int(self.im.width/(self.im.width+self.im.height)*4)
@@ -347,6 +364,7 @@ class FluorescenceImage(object):
 class TOFImageInGF(FluorescenceImage):
     '''
     A class to extract fluorescence from different peaks of time of flight images of atoms expanding in gauge field.
+
     Parameters:
         filePath: str, Path to the multiple-image file
     '''

@@ -82,7 +82,8 @@ class AndorSifFile(object):
     """
     This is main class to handle the reading of sif files. All the work is
     done in the constructor, the sif file is opened, data is read and the file
-    is closed.
+    is closed. This is adopted from https://github.com/ardiloot/AndorSifReader
+    with modifications.
 
     Parameters:
         filename: str, Path to .sif file to read
