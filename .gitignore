@@ -1,6 +1,6 @@
 .ipynb_checkpoints
 .idea
 *.pyd
-__pycache__/*.pyc
+__pycache__
 build
 Result.txt

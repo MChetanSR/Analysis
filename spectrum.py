@@ -76,6 +76,20 @@ def spectroscopy(ODimages, f, d=4,loss=False, plot=True, fileNum='', savefig=Fal
 
 
 def bv(f, f0, b0, T, s):
+    '''
+    Function representing convolution of the lorentzian line shape of the red transition and gaussian maxwell
+    distribution. This is taken from 5.13 from Chang chi's thesis and added the effect of saturation parameter.
+
+    Args:
+        f: numpy.array, frequency vector
+        f0: float, resonance frequency or centre of the spectrum
+        b0: float, optical depth at resonance at zero temperature
+        T: float, temperature in micro K
+        s: float, saturation parameter of the probe, :math:`I/I_s`.
+
+    Returns:
+        optical depth for frequencies f in the shape f.
+    '''
     gamma = 2*pi*7.5*milli
     vavg = np.sqrt(T*micro*Boltzmann/(87*m_p))
     k = 2*pi/(689*nano)
@@ -84,6 +98,18 @@ def bv(f, f0, b0, T, s):
 
 
 def bvFit(f, array, p0=None, bounds=None):
+    '''
+    Function to fit spectroscopy data to real line shape of the transition.
+
+    Args:
+        f: numpy.array, frequency vector
+        array: float, optical depth at scan frequencies f
+        p0: initial guess for the fit as [f_0, b_0, T (in :math:`\mu K`), s]
+        bounds: bounds for the fit as ([lower bounds], [upper bounds])
+
+    Returns:
+        a tuple with optimized parameters and covariance ex: (pOpt, pCov)
+    '''
     pOpt, pCov = curve_fit(bv, f, array, p0, bounds=bounds)
     return pOpt, pCov
 
@@ -97,6 +123,8 @@ def spectroscopyFaddeva(ODimages, f, imaging_params, plot=True, fileNum='', save
     Parameters:
         ODimages: ODimages extracted from ShadowImaging sequences
         f: array of frequencies for which the scan is done
+        imaging_params: a dictionary with keys as follows
+            ex: {'binning':2, 'magnification': 2.2, 'pixelSize': 16*micro, 'saturation': 1 }
         plot: bool, default is True to specify if the data has to be plotted
         fileNum: string, file number (plus any additional description) of the image file for which the analysis is done.
         savefig: bool, default is False. Change it to true if you want to save the spectrum as .png
@@ -120,8 +148,9 @@ def spectroscopyFaddeva(ODimages, f, imaging_params, plot=True, fileNum='', save
         index.append(amp)
     maxODAt = np.argmax(index)
     try:
+        s = imaging_params['saturation']
         amp, xo, yo, sx, sy, theta, offset = gaussian2DFit(ODimages[maxODAt], p0, bounds, plot=False)[0]
-        b = ([min(f), 0.5, 0.01,  1], [max(f), 300, 50,  50])
+        b = ([min(f), 0.5, 0.01,  0.9*s], [max(f), 300, 7,  1.1*s])
         pOpt, pCov = bvFit(f, np.array(index), p0=[f[maxODAt], max(index)*10, 2, 10], bounds=b)
     except RuntimeError:
         pOpt = [0, 0, 0, 0]

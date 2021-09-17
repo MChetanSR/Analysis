@@ -12,7 +12,7 @@ def numAtomsBlue(image, delta, imaging_params, s=0, plot=True):
         image: a numpy.ndarray, OD from the experiment
         delta: a float, detuning of the probe, 2*(AOMFreq-69) MHz
         imaging_params: a dictionary with keys as follows
-            ex: {'binning':2, 'magnification': 2.2, 'pixelSize': 16*micro }
+            ex: {'binning':2, 'magnification': 2.2, 'pixelSize': 16*micro, 'saturation': 1 }
         s(optional): a float, saturation parameter of the probe. Default is 0.
         plot(optional): a bool, flag to plot the gaussian fits if True.
             Default is True.
