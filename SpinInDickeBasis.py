@@ -160,3 +160,35 @@ def a_dag(N=5):
         values = np.array([np.sqrt(n+1) for n in n_n[:-1]])
         spar = csr_matrix((values, (rows, cols)), shape=(int(N), int(N)))
         return spar
+
+class SU3Basis():
+    def _init__(self):
+        pass
+
+    def matrices(self):
+        I = Id(3)
+        l1 = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 0]])
+        l2 = np.array([[0, -1j, 0], [1j, 0, 0], [0, 0, 0]])
+        l3 = np.array([[1, 0, 0], [0, -1, 0], [0, 0, 0]])
+        l4 = np.array([[0, 0, 1], [0, 0, 0], [1, 0, 0]])
+        l5 = np.array([[0, 0,-1j], [0, 0, 0], [1j, 0, 0]])
+        l6 = np.array([[0, 0, 0], [0, 0, 1], [0, 1, 0]])
+        l7 = np.array([[0, 0, 0], [0, 0, -1j], [0, 1j, 0]])
+        l8 = np.array([[1, 0, 0], [0, 1, 0], [0, 0, -2]])/np.sqrt(3)
+
+    def structureConstants(self):
+        f = np.zeros((8, 8, 8))
+        f[0, 1, 2] = 1
+        f[0, 3, 6] = 0.5
+        f[0, 5, 4] = 0.5
+        f[1, 3, 5] = 0.5
+        f[1, 4, 6] = 0.5
+        f[2, 3, 4] = 0.5
+        f[2, 6, 5] = 0.5
+        f[3, 4, 7] = 0.5*np.sqrt(3)
+        f[5, 6, 7] = 0.5*np.sqrt(3)
+        self.f = f
+        return self.f
+
+    def structureConstant(self, i, j, k):
+        return self.f[i-1, j-1, k-1]

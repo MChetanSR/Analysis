@@ -11,6 +11,7 @@ def gaussian(x, amplitude, xo, sigma, offset):
 def gaussianFit(x, array, p0=[], bounds=[(), ()], plot=True):
     """
     Fits the given array to an 1D-gaussian.
+
     Parameters:
         x: 1darray, the argument values of the gaussian
         array: 1darray, the data to fit to the gaussian
@@ -40,6 +41,7 @@ def gaussian2D(X, amplitude, xo, yo, sigma_x, sigma_y, theta, offset):
 def gaussian2DFit(image, p0=None, bounds=[(), ()], plot=True, title=''):
     """
     Fits an image with a 2D gaussian.
+
     Parameters:
         image: numpy ndarray
         p0: ndarray, initial guess for the fit params in the form of
@@ -253,6 +255,7 @@ def lorentzian(x, amplitude, xo, gamma, offset):
 def lorentzianFit(x, array, p0=[], bounds=[(), ()], plot=False):
     """
     Fits the given array to a Lorentzian.
+
     Parameters:
         array: 1darray, the data to fit to the lorentzian
         p0: ndarray, initial guess for the fit params in the form of

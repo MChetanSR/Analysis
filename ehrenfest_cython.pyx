@@ -132,17 +132,17 @@ cdef class EhrenfestSU2:
     def evolve(self, np.ndarray[double, ndim=1, negative_indices=False] t, np.ndarray[double, ndim=1, negative_indices=False] y0, double T, int N = 1000, double p_x = 0, double p_y = 0, double d1 = -1, double d2 = 1, double d3 = 3):
         cdef np.ndarray[double, ndim=1, negative_indices=False] px = sqrt(T) * np.random.randn(N) + p_x
         cdef np.ndarray[double, ndim=1, negative_indices=False] py = sqrt(T) * np.random.randn(N) + p_y
-        #cdef np.ndarray[double, ndim=1, negative_indices=False] x_0 = sqrt(T / (30/9600.0) ** 2) * np.random.randn(N)
-        #cdef np.ndarray[double, ndim=1, negative_indices=False] y_0 = sqrt(T / (60/9600.0) ** 2) * np.random.randn(N)
+        cdef np.ndarray[double, ndim=1, negative_indices=False] x_0 = sqrt(T / (30/9600.0) ** 2) * np.random.randn(N)
+        cdef np.ndarray[double, ndim=1, negative_indices=False] y_0 = sqrt(T / (60/9600.0) ** 2) * np.random.randn(N)
         cdef np.ndarray[double, ndim=3, negative_indices=False] raw = np.zeros((N, len(y0), len(t)), dtype=np.float)
-        #cdef np.ndarray[double, ndim=2, negative_indices=False] arg = np.zeros((N, len(y0)), dtype=np.float)
+        cdef np.ndarray[double, ndim=2, negative_indices=False] arg = np.zeros((N, len(y0)), dtype=np.float)
         cdef np.ndarray[double, ndim=2, negative_indices=False] y
         self.t = t
         self.d1 = d1/2
         self.d2 = d2/2
         self.d3 = d3/2
         for i in range(N):
-            #y0[0], y0[1] =  x_0[i], y_0[i]
+            y0[0], y0[1] =  x_0[i], y_0[i]
             y0[5], y0[6] = px[i], py[i]
             y = odeint(self._eom, y0, self.t, args=(self.d1, self.d2, self.d3))
             raw[i] = y[:, 0], y[:, 1], y[:, 2], y[:, 3], y[:, 4], y[:, 5], y[:, 6]#'''
