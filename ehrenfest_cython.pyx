@@ -15,15 +15,24 @@ cdef np.ndarray sigz = np.array([[1, 0], [0, -1]], dtype=np.float)
 cdef np.ndarray Id = np.array([[1, 0], [0, 1]], dtype=np.float)
 
 cpdef double omegaConstant(double t):
-    return 1
-
-cpdef double omegaRamp(double t, double t_ramp):
-    if t <= t_ramp:
-        return sqrt(t/t_ramp)
+    o1 = np.sqrt(1)
+    if type(t) == float or type(t) == np.float64:
+        return o1
     else:
-        return 1
+        return o1 * np.ones(len(t))
 
-cpdef double omegaGaussian(double t, double amp, double Tc, double sigma):
+def omegaRamp(double t, double t_ramp):
+    if type(t) == float or type(t) == np.float64:
+        if t <= t_ramp:
+            return np.sqrt(t / t_ramp)
+        else:
+            return 1
+    else:
+        conditions = [t <= t_ramp, t > t_ramp]
+        values = [lambda t: np.sqrt(t / t_ramp), lambda t: 1]
+        return np.piecewise(t, conditions, values)
+
+def omegaGaussian(double t, double amp, double Tc, double sigma):
     '''
     A function to output gaussian pulse in time with given center and sigma.
     Parameters: 

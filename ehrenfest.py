@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.integrate import solve_ivp, odeint
-from SpinInDickeBasis import SU3Basis
+from .SpinInDickeBasis import SU3Basis
 
 sigx = np.array([[0, 1],[1, 0]])
 sigz = np.array([[1, 0],[0,-1]])
@@ -151,55 +151,82 @@ class EhrenfestSU3:
     def __init__(self, Tripod_l, Tripod_r):
         self.t_l = Tripod_l
         self.t_r = Tripod_r
-        self.f = SU3Basis.structureConstants()
+        self.f = SU3Basis().structureConstants()
 
-    def _eom(self, y, t):
+    def _calculate_eom(self, y, t, p_x, p_y):
         theta_l, phi_l = self.t_l.mixingAngles(t)
-        theta_l, phi_r = self.t_r.mixingAngles(t)
+        theta_r, phi_r = self.t_r.mixingAngles(t)
         cot_theta_l = 1/np.tan(theta_l)
         cot_theta_r = 1/np.tan(theta_r)
-        alpha0 = sqrt(1+cot_theta_l ^ 2+cot_theta_r ^ 2)
-        e1 = (cot_theta_l**2*(1+np.cos(phi_l)**2)-cot_theta_r**22*(1+np.cos(phi_r)**2))/(3*alpha0**2)
-        e2 = (cot_theta_l**2*np.sin(phi_l)**2+cot_theta_r**2*np.sin(phi_r)**2)/(3*alpha0**2)
-        Ax1 = np.sin(phi_l)*np.cos(phi_l)*cot_theta_l/(2*alpha0)
+        alpha0 = np.sqrt(1+cot_theta_l**2+cot_theta_r**2)
+        const1 = (cot_theta_l**2*(1+np.cos(phi_l)**2)-cot_theta_r**2*(1+np.cos(phi_r)**2))/(alpha0**2)
+        const2 = (cot_theta_l**2*np.sin(phi_l)**2+cot_theta_r**2*np.sin(phi_r)**2)/(alpha0**2)
+        e1 = (np.sin(phi_r)**2 - np.sin(phi_r)**2 + const1)/3
+        e2 = (np.cos(phi_r)**2 + np.cos(phi_r) ** 2 + const2) / 3
+        Ax1 = np.sin(phi_l)*np.cos(phi_l)*cot_theta_l/alpha0
         Ax2 = 0
-        Ax3 = 0.5*(1+np.sin(phi_l)**2-(cot_theta_l**2*(1+np.cos(phi_l)**2)-cot_theta_r**2*(1+cos(phi_r)**2)))/(alpha0**2)
+        Ax3 = 0.5*(1+np.sin(phi_l)**2 - const1)
         Ax4 = 0
         Ax5 = 0
-        Ax6 = -np.sin(phi_r)*np.cos(phi_r)*cot_theta_r/(2*alpha0)
+        Ax6 = -np.sin(phi_r)*np.cos(phi_r)*cot_theta_r/(alpha0)
         Ax7 = 0
-        Ax8 = (sqrt(3)/2)*(1+np.sin(phi_r)**2+e1)
+        Ax8 = (np.sqrt(3)/2)*(2*(1+np.sin(phi_r)**2)/3+(1+np.sin(phi_l)**2)+const1)
         Ay1 = -Ax1
         Ay2 = 0
-        Ay3 = 0.5*(np.cos(phi_l)**2-(cot_theta_l**2*np.sin(phi_l)**2+cot_theta_r**2*np.sin(phi_r)**2))/(alpha0**2)
+        Ay3 = 0.5*(np.cos(phi_l)**2-  const2)
         Ay4 = 0
         Ay5 = 0
         Ay6 = Ax6
         Ay7 = 0
-        Ay8 = (np.sqrt(3)/2)*(-np.cos(phi_r)**2+e2)
+        Ay8 = (np.sqrt(3)/2)*(-2*(np.cos(phi_r)**2)/3+const2+np.cos(phi_l)**2)
         Ax = np.array([Ax1, Ax2, Ax3, Ax4, Ax5, Ax6, Ax7, Ax8])
         Ay = np.array([Ay1, Ay2, Ay3, Ay4, Ay5, Ay6, Ay7, Ay8])
-        e = np.array([e1, e2, 0])
-
-        equation = np.zeros(8)
+        #e = np.array([e1, e2, 0])
+        equation = np.zeros(8, dtype=complex)
         for k in range(8):
             for m in range(8):
                 for j in range(8):
-                    equation[k] += (p_x*Ax[m]+p_y*Ay[m])*self.f(m, k, j)*y(j)
+                    equation[k] += (p_x*Ax[m]+p_y*Ay[m])*self.f[m, k, j]*y[j]
         return equation
+
+    def _eom_real(self, y, t, p_x, p_y):
+        return self._calculate_eom(y, t, p_x, p_y).real
+
+    def _eom_imag(self, y, t, p_x, p_y):
+        return self._calculate_eom(y, t, p_x, p_y).imag
 
     def evolve(self, t, y0, T, N=1000, p_x=0, p_y=0):
         px = np.sqrt(T)*np.random.randn(N)+p_x
         py = np.sqrt(T)*np.random.randn(N)+p_y
-        # x_0 = np.sqrt(T/(30/9600)**2)*np.random.randn(N)
-        # y_0 = np.sqrt(T/(60/9600)**2)*np.random.randn(N)
         self.raw = np.zeros((N, len(y0), len(t)))
         for i in range(N):
-            y0[8], y0[9] = px[i], py[i]
-            y = odeint(self._eom, y0, t, args=(d1/2, d2/2, d3/2))
-            self.raw[i] = y[:, 0], y[:, 1], y[:, 2], y[:, 3], y[:, 4], y[:, 5], y[:, 6]
+            yreal = odeint(self._eom_real, y0, t, args=(px[i], py[i]))
+            y = yreal
+            self.raw[i] = y[:, 0], y[:, 1], y[:, 2], y[:, 3], y[:, 4], y[:, 5], y[:, 6], y[:, 7]
         self.result = np.mean(self.raw, axis=0)
         return self.result
 
-    def bareStatePop(self):
-        pass
+    def bareStatePop(self, t):
+        l = SU3Basis().matrices()
+        theta_l, phi_l = self.t_l.mixingAngles(t)
+        theta_r, phi_r = self.t_r.mixingAngles(t)
+        cot_theta_l = 1 / np.tan(theta_l)
+        cot_theta_r = 1 / np.tan(theta_r)
+        alpha0 = np.sqrt(1 + cot_theta_l**2 + cot_theta_r **2)
+        z = np.zeros(len(theta_l))
+        o = np.ones(len(theta_l))
+        rho = np.zeros((5, 5, len(theta_l)), dtype=complex)
+        D_l = np.array([np.sin(phi_l), -np.cos(phi_l), z, z, z])
+        D_0 = np.array([(1 / np.tan(theta_l)) * np.cos(phi_l),
+                        (1 / np.tan(theta_l)) * np.sin(phi_l), -o,
+                        (1 / np.tan(theta_r)) * np.sin(phi_r),
+                        (1 / np.tan(theta_r)) * np.cos(phi_r)])/alpha0
+        D_r = np.array([z, z, z, -np.cos(phi_r), np.sin(phi_r)])
+        D = np.array([D_l, D_0, D_r])
+        Ddag = np.transpose(D, (1, 0, 2))
+        for i in range(len(theta_l)):
+            rho_D = l[0]/3+np.zeros((3,3), dtype=complex)
+            for j in range(8):
+                rho_D += self.result[j, i]*l[j+1]
+            rho[:,:, i] = np.dot(np.dot(Ddag[:,:,i], rho_D), D[:, :, i])
+        return np.array([abs(rho[0,0]), abs(rho[1,1]), abs(rho[2,2]), abs(rho[3,3]), abs(rho[4,4])])
