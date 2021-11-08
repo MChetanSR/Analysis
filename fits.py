@@ -203,27 +203,50 @@ def multipleGaussian2DFit(image, p0, bounds, TOF, plot=True, cropSize=6, logNorm
     pOpt[2] = p0[2]-cropSize+pOpt[2]
     disQuanta = hbar*(2*pi/(689*nano*87*m_p))*TOF*milli
     dis = disQuanta*2.5/(16*micro)
-    p0 = [[pOpt[0], pOpt[0]*0.4, pOpt[0]*0.3, pOpt[0]*0.02, pOpt[0]*0.1],
-          [pOpt[1], pOpt[1]-dis, pOpt[1], pOpt[1]-dis, pOpt[1]],
-          [pOpt[2], pOpt[2]-dis, pOpt[2]-2*dis, pOpt[2]-3*dis, pOpt[2]-4*dis],
+    '''
+    p0 = [[pOpt[0], pOpt[0]*0.4, pOpt[0]*0.3, pOpt[0]*0.02, pOpt[0]*0.02, pOpt[0]*0.02, pOpt[0]*0.02, pOpt[0]*0.02],
+          [pOpt[1], pOpt[1]-dis, pOpt[1], pOpt[1]-dis, pOpt[1], pOpt[1]+dis, pOpt[1]+2*dis, pOpt[1]],
+          [pOpt[2], pOpt[2]-dis, pOpt[2]-2*dis, pOpt[2]-3*dis, pOpt[2]-4*dis, pOpt[2]-dis, pOpt[2], pOpt[2]+2*dis],
+          [pOpt[3], pOpt[3], pOpt[3], pOpt[3], pOpt[3], pOpt[3], pOpt[3], pOpt[3]],
+          [pOpt[4], pOpt[4], pOpt[4], pOpt[4], pOpt[4], pOpt[4], pOpt[4], pOpt[4]],
+          [pOpt[5], pOpt[5], pOpt[5], pOpt[5], pOpt[5], pOpt[5], pOpt[5], pOpt[5]],
+          [pOpt[6], pOpt[6], pOpt[6], pOpt[6], pOpt[6], pOpt[6], pOpt[6], pOpt[6]]]
+    bounds = ([[pOpt[0]*0.0, pOpt[0]*0.0, pOpt[0]*0.0, pOpt[0]*0.0, pOpt[0]*0.0, pOpt[0]*0, pOpt[0]*0, pOpt[0]*0],
+               [pOpt[1]-0.3, pOpt[1]-dis*1.3, pOpt[1]-0.3*dis, pOpt[1]-dis*1.3, pOpt[1]-0.3, pOpt[1]+0.7*dis, pOpt[1]+2*0.7*dis, pOpt[1]-0.3*dis],
+               [pOpt[2]-0.3, pOpt[2]-dis*1.3, pOpt[2]-2*dis*1.3, pOpt[2]-3*dis*1.3, pOpt[2]-4*dis*1.3, pOpt[2]-1.3*dis, pOpt[2]-0.3*dis, pOpt[2]+2*0.7*dis],
+               [pOpt[3]*0.9, pOpt[3]*0.9, pOpt[3]*0.9, pOpt[3]*0.9, pOpt[3]*0.9, pOpt[3]*0.9, pOpt[3]*0.9, pOpt[3]*0.9],
+               [pOpt[4]*0.9, pOpt[4]*0.9, pOpt[4]*0.9, pOpt[4]*0.9, pOpt[4]*0.9, pOpt[4]*0.9, pOpt[4]*0.9, pOpt[4]*0.9],
+               [pOpt[5]-0.1, pOpt[5]-0.1, pOpt[5]-0.1, pOpt[5]-0.1, pOpt[5]-0.1, pOpt[5]-0.1, pOpt[5]-0.1, pOpt[5]-0.1],
+               [pOpt[6]-150, pOpt[6]-150, pOpt[6]-150, pOpt[6]-150, pOpt[6]-150, pOpt[6]-150, pOpt[6]-150, pOpt[6]-150]],
+              [[pOpt[0]*1.5, pOpt[0]*1.5, pOpt[0]*1.5, pOpt[0]*0.7, pOpt[0]*0.7, pOpt[0]*0.3, pOpt[0]*0.3, pOpt[0]*0.3],
+               [pOpt[1]+0.3, pOpt[1]-dis*0.7, pOpt[1]*1.3, pOpt[1]-dis*0.7, pOpt[1]+0.1, pOpt[1]+1.3*dis, pOpt[1]+2*1.3*dis, pOpt[1]+0.3*dis],
+               [pOpt[2]+0.3, pOpt[2]-dis*0.7, pOpt[2]-2*dis*0.7, pOpt[2]-3*dis*0.7, pOpt[2]-4*dis*0.7, pOpt[2]-0.7*dis, pOpt[2]+0.3*dis, pOpt[2]+2*1.3*dis],
+               [pOpt[3]*1.1, pOpt[3]*1.1, pOpt[3]*1.1, pOpt[3]*1.1, pOpt[3]*1.1, pOpt[3]*1.1, pOpt[3]*1.1, pOpt[3]*1.1],
+               [pOpt[4]*1.1, pOpt[4]*1.1, pOpt[4]*1.1, pOpt[4]*1.1, pOpt[4]*1.1, pOpt[4]*1.1, pOpt[4]*1.1, pOpt[4]*1.1],
+               [pOpt[5]+0.2, pOpt[5]+0.2, pOpt[5]+0.2, pOpt[5]+0.2, pOpt[5]+0.2, pOpt[5]+0.2, pOpt[5]+0.2, pOpt[5]+0.2],
+               [pOpt[6]+150, pOpt[6]+150, pOpt[6]+150, pOpt[6]+150, pOpt[6]+150, pOpt[6]+150, pOpt[6]+150, pOpt[6]+150]])'''
+    p0 = [[pOpt[0], pOpt[0] * 0.4, pOpt[0] * 0.3, pOpt[0] * 0.02, pOpt[0] * 0.02],
+          [pOpt[1], pOpt[1] - dis, pOpt[1], pOpt[1] - dis, pOpt[1]],
+          [pOpt[2], pOpt[2] - dis, pOpt[2] - 2 * dis, pOpt[2] - 3 * dis, pOpt[2] - 4 * dis],
           [pOpt[3], pOpt[3], pOpt[3], pOpt[3], pOpt[3]],
           [pOpt[4], pOpt[4], pOpt[4], pOpt[4], pOpt[4]],
           [pOpt[5], pOpt[5], pOpt[5], pOpt[5], pOpt[5]],
           [pOpt[6], pOpt[6], pOpt[6], pOpt[6], pOpt[6]]]
-    bounds = ([[pOpt[0]*0.0, pOpt[0]*0.0, pOpt[0]*0.0, pOpt[0]*0.0, pOpt[0]*0.0],
-               [pOpt[1]-0.3, pOpt[1]-dis*1.3, pOpt[1]*0.7, pOpt[1]-dis*1.3, pOpt[1]-0.3],
-               [pOpt[2]-0.3, pOpt[2]-dis*1.3, pOpt[2]-2*dis*1.3, pOpt[2]-3*dis*1.3, pOpt[2]-4*dis*1.3],
-               [pOpt[3]*0.9, pOpt[3]*0.9, pOpt[3]*0.9, pOpt[3]*0.9, pOpt[3]*0.9],
-               [pOpt[4]*0.9, pOpt[4]*0.9, pOpt[4]*0.9, pOpt[4]*0.9, pOpt[4]*0.9],
-               [pOpt[5]-0.1, pOpt[5]-0.1, pOpt[5]-0.1, pOpt[5]-0.1, pOpt[5]-0.1],
-               [pOpt[6]-150, pOpt[6]-150, pOpt[6]-150, pOpt[6]-150, pOpt[6]-150]],
-              [[pOpt[0]*1.5, pOpt[0]*1.5, pOpt[0]*1.5, pOpt[0]*0.5, pOpt[0]*0.5],
-               [pOpt[1]+0.3, pOpt[1]-dis*0.7, pOpt[1]*1.3, pOpt[1]-dis*0.7, pOpt[1]+0.1],
-               [pOpt[2]+0.3, pOpt[2]-dis*0.7, pOpt[2]-2*dis*0.7, pOpt[2]-3*dis*0.7, pOpt[2]-4*dis*0.7],
-               [pOpt[3]*1.1, pOpt[3]*1.1, pOpt[3]*1.1, pOpt[3]*1.1, pOpt[3]*1.1],
-               [pOpt[4]*1.1, pOpt[4]*1.1, pOpt[4]*1.1, pOpt[4]*1.1, pOpt[4]*1.1],
-               [pOpt[5]+0.2, pOpt[5]+0.2, pOpt[5]+0.2, pOpt[5]+0.2, pOpt[5]+0.2],
-               [pOpt[6]+150, pOpt[6]+150, pOpt[6]+150, pOpt[6]+150, pOpt[6]+150]])
+    bounds = (
+    [[pOpt[0] * 0.0, pOpt[0] * 0.0, pOpt[0] * 0.0, pOpt[0] * 0.0, pOpt[0] * 0.0],
+     [pOpt[1] - 0.1*dis, pOpt[1] - dis * 1.1, pOpt[1] - 0.1 * dis, pOpt[1] - dis * 1.1, pOpt[1] - 0.1*dis],
+     [pOpt[2] - 0.1*dis, pOpt[2] - dis * 1.1, pOpt[2] - 2 * dis * 1.1, pOpt[2] - 3 * dis * 1.1, pOpt[2] - 4 * dis * 1.1],
+     [pOpt[3] * 0.9, pOpt[3] * 0.9, pOpt[3] * 0.9, pOpt[3] * 0.9, pOpt[3] * 0.9],
+     [pOpt[4] * 0.9, pOpt[4] * 0.9, pOpt[4] * 0.9, pOpt[4] * 0.9, pOpt[4] * 0.9],
+     [pOpt[5] - 0.1, pOpt[5] - 0.1, pOpt[5] - 0.1, pOpt[5] - 0.1, pOpt[5] - 0.1],
+     [pOpt[6] - 150, pOpt[6] - 150, pOpt[6] - 150, pOpt[6] - 150, pOpt[6] - 150]],
+    [[pOpt[0] * 1.5, pOpt[0] * 1.5, pOpt[0] * 1.5, pOpt[0] * 0.7, pOpt[0] * 0.7],
+     [pOpt[1] + 0.1*dis, pOpt[1] - dis * 0.9, pOpt[1] * 1.1, pOpt[1] - dis * 0.9, pOpt[1] + 0.1*dis],
+     [pOpt[2] + 0.1*dis, pOpt[2] - dis * 0.9, pOpt[2] - 2 * dis * 0.9, pOpt[2] - 3 * dis * 0.9, pOpt[2] - 4 * dis * 0.9],
+     [pOpt[3] * 1.1, pOpt[3] * 1.1, pOpt[3] * 1.1, pOpt[3] * 1.1, pOpt[3] * 1.1],
+     [pOpt[4] * 1.1, pOpt[4] * 1.1, pOpt[4] * 1.1, pOpt[4] * 1.1, pOpt[4] * 1.1],
+     [pOpt[5] + 0.2, pOpt[5] + 0.2, pOpt[5] + 0.2, pOpt[5] + 0.2, pOpt[5] + 0.2],
+     [pOpt[6] + 150, pOpt[6] + 150, pOpt[6] + 150, pOpt[6] + 150, pOpt[6] + 150]])
     pOpt, pCov = curve_fit(multipleGaussian2D, X, image.reshape((Nx*Ny)), p0=np.array(p0).reshape((35)), bounds=np.array(bounds).reshape((2, 35)))
     fit = multipleGaussian2D(X, *pOpt).reshape(Ny, Nx)
     if plot == True:

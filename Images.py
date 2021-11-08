@@ -192,55 +192,45 @@ class ShadowImage(object):
             r = 'No description to show!'
         return r
 
-    def redProbeIntensity(self, params, plot=False):
+    def redProbeIntensity(self, params, ROI):
         """
         Returns intensity(:math:`\mu W/cm^2`), power(:math:`W`), waists :math:`w_x` and :math:`w_x`.
         """
         try:
-            probeImage = self.averagedIncidence[0]
+            probeImage = self.averagedIncidence[0][ROI[0]:ROI[1], ROI[2]:ROI[3]]
         except AttributeError:
             print("Call averagedSignalOD to calculate averagedIncidece before calling probeIntensity.")
             return
-        y = self.im.height
-        x = self.im.width
         imConstant = params['binning']*params['pixelSize']/params['magnification']
-        pOpt, pCov = gaussian2DFit(probeImage, p0=[60000, x/2, y/2, x/2, y/2, np.pi/4, 2000], plot=plot)
         totalCount = np.sum(np.sum(probeImage))
-        wx = abs(2*pOpt[3]*imConstant*100) # in cm
-        wy = abs(2*pOpt[4]*imConstant*100) # in cm
-        area = np.pi*wx*wy
+        area = len(probeImage)*len(probeImage[0])*imConstant**2
         if self.ext=='.tif': # for PCO panda 4.2 bi camera red imaging
             photons = totalCount*0.8/(0.85)
             energy = photons*h*c/(689*nano)
-            power = energy/(0.95*60*micro) # 0.95 to account for filter and losses on optics
-            intensity = 2*(power/1e-6)/(area) # in micro Watt/cm^2
-            return intensity, power, wx, wy
+            power = energy/(0.95*80*micro) # 0.95 to account for filter and losses on optics
+            intensity = (power/1e-6)/(area*10**4) # in micro Watt/cm^2
+            return intensity, power
         elif self.ext == '.sif': # for andor
             raise NotImplementedError
     
-    def blueProbeIntensity(self, params, plot=False):
+    def blueProbeIntensity(self, params, ROI):
         """
-        Returns intensity(micro Watt/cm^2), power(W), waist_x, waist_y
+        Returns intensity(micro Watt/cm^2), power(W)
         """
         try:
-            probeImage = self.averagedIncidence[0]
+            probeImage = self.averagedIncidence[0][ROI[0]:ROI[1], ROI[2]:ROI[3]]
         except AttributeError:
             print("Call averagedSignalOD to calculate averagedIncidece before calling probeIntensity.")
             return
-        y = self.im.height
-        x = self.im.width
         imConstant = params['binning']*params['pixelSize']/params['magnification']
-        pOpt, pCov = gaussian2DFit(probeImage, p0=[4000, x/2, y/2, x/2, y/2, np.pi/4, 500], plot=plot)
         totalCount = np.sum(np.sum(probeImage))
-        wx = abs(2*pOpt[3]*imConstant*100) # in cm
-        wy = abs(2*pOpt[4]*imConstant*100) # in cm
-        area = np.pi*wx*wy
+        area = len(probeImage)*len(probeImage[0])*imConstant**2
         if self.ext=='.tif': # for PCO panda 4.2 bi camera blue imaging
             photons = totalCount*0.8/(0.85)
             energy = photons*h*c/(461*nano)
             power = energy/(0.95*20*micro) # 0.95 to account for filter and losses on optics
-            intensity = 2*(power/1e-6)/(area) # in micro Watt/cm^2
-            return intensity, power, wx, wy
+            intensity = (power/1e-6)/(10**4*area) # in micro Watt/cm^2
+            return intensity, power
         elif self.ext == '.sif': # for andor
             raise NotImplementedError
 
