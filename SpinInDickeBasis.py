@@ -166,7 +166,7 @@ class SU3Basis():
         return self
 
     def matrices(self):
-        I = Id(3).toarray()
+        I = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
         l1 = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 0]])
         l2 = np.array([[0, -1j, 0], [1j, 0, 0], [0, 0, 0]])
         l3 = np.array([[1, 0, 0], [0, -1, 0], [0, 0, 0]])

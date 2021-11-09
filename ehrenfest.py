@@ -147,13 +147,52 @@ class Tripod():
         phi = np.arctan2(abs(omega_2), abs(omega_1))
         return theta, phi
 
+def mixingAngles(omega_1, omega_2, omega_3):
+    omega = np.sqrt(abs(omega_1)**2+abs(omega_2)**2+abs(omega_3)**2)
+    theta = np.arccos(abs(omega_3)/omega)
+    phi = np.arctan2(abs(omega_2), abs(omega_1))
+    return theta, phi
+
+def SU3_GaugeField(theta_l, phi_l, theta_r, phi_r):
+    cot_theta_l = 1/np.tan(theta_l)
+    cot_theta_r = 1/np.tan(theta_r)
+    alpha0 = np.sqrt(1+cot_theta_l**2+cot_theta_r**2)
+    const1 = (cot_theta_l**2*(1+np.cos(phi_l)**2)-cot_theta_r**2*(1+np.cos(phi_r)**2))/(alpha0**2)
+    const2 = (cot_theta_l**2*np.sin(phi_l)**2+cot_theta_r**2*np.sin(phi_r)**2)/(alpha0**2)
+    e1 = 1*(np.sin(phi_l)**2-np.sin(phi_r)**2+const1)/3
+    e2 = 1*(np.cos(phi_l)**2+np.cos(phi_r)**2+const2)/3
+    Ax1 = np.sin(phi_l)*np.cos(phi_l)*cot_theta_l/alpha0
+    Ax2 = 0
+    Ax3 = 0.5*(1+np.sin(phi_l)**2-const1)
+    Ax4 = 0
+    Ax5 = 0
+    Ax6 = -np.sin(phi_r)*np.cos(phi_r)*cot_theta_r/(alpha0)
+    Ax7 = 0
+    Ax8 = -(np.sqrt(3)/2)*(-(1+np.sin(phi_r)**2)-e1)
+    Ay1 = -Ax1
+    Ay2 = 0
+    Ay3 = 0.5*(np.cos(phi_l)**2-const2)
+    Ay4 = 0
+    Ay5 = 0
+    Ay6 = Ax6
+    Ay7 = 0
+    Ay8 = -(np.sqrt(3)/2)*((np.cos(phi_r)**2)-e2)
+    Ax = np.array([e1, Ax1, Ax2, Ax3, Ax4, Ax5, Ax6, Ax7, Ax8])
+    Ay = np.array([e2, Ay1, Ay2, Ay3, Ay4, Ay5, Ay6, Ay7, Ay8])
+    l = SU3Basis().matrices()
+    A_x, A_y = np.zeros((2, 3, 3), dtype=complex)
+    for i in range(9):
+        A_x += Ax[i]*l[i]
+        A_y += Ay[i]*l[i]
+    return A_x, A_y
+
 class EhrenfestSU3:
     def __init__(self, Tripod_l, Tripod_r):
         self.t_l = Tripod_l
         self.t_r = Tripod_r
         self.f = SU3Basis().structureConstants()
 
-    def _calculate_eom(self, y, t, p_x, p_y):
+    def _eom(self, y, t, p_x, p_y):
         theta_l, phi_l = self.t_l.mixingAngles(t)
         theta_r, phi_r = self.t_r.mixingAngles(t)
         cot_theta_l = 1/np.tan(theta_l)
@@ -182,25 +221,19 @@ class EhrenfestSU3:
         Ax = np.array([Ax1, Ax2, Ax3, Ax4, Ax5, Ax6, Ax7, Ax8])
         Ay = np.array([Ay1, Ay2, Ay3, Ay4, Ay5, Ay6, Ay7, Ay8])
         #e = np.array([e1, e2, 0])
-        equation = np.zeros(8, dtype=complex)
+        equation = np.zeros(8)
         for k in range(8):
             for m in range(8):
                 for j in range(8):
-                    equation[k] += (p_x*Ax[m]+p_y*Ay[m])*self.f[m, k, j]*y[j]
+                    equation[k] += (p_x*Ax[m]+p_y*Ay[m])*self.f[m, k, j].real*y[j]
         return equation
-
-    def _eom_real(self, y, t, p_x, p_y):
-        return self._calculate_eom(y, t, p_x, p_y).real
-
-    def _eom_imag(self, y, t, p_x, p_y):
-        return self._calculate_eom(y, t, p_x, p_y).imag
 
     def evolve(self, t, y0, T, N=1000, p_x=0, p_y=0):
         px = np.sqrt(T)*np.random.randn(N)+p_x
         py = np.sqrt(T)*np.random.randn(N)+p_y
         self.raw = np.zeros((N, len(y0), len(t)))
         for i in range(N):
-            yreal = odeint(self._eom_real, y0, t, args=(px[i], py[i]))
+            yreal = odeint(self._eom, y0, t, args=(px[i], py[i]))
             y = yreal
             self.raw[i] = y[:, 0], y[:, 1], y[:, 2], y[:, 3], y[:, 4], y[:, 5], y[:, 6], y[:, 7]
         self.result = np.mean(self.raw, axis=0)
