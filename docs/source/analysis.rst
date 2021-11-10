@@ -7,7 +7,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   analysis.electricDipole
+   analysis.Physics
 
 Submodules
 ----------
@@ -28,14 +28,6 @@ analysis.Images module
    :undoc-members:
    :show-inheritance:
 
-analysis.OBS module
--------------------
-
-.. automodule:: analysis.OBS
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 analysis.PicoMatTools module
 ----------------------------
 
@@ -44,42 +36,18 @@ analysis.PicoMatTools module
    :undoc-members:
    :show-inheritance:
 
-analysis.SpinInDickeBasis module
---------------------------------
-
-.. automodule:: analysis.SpinInDickeBasis
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-analysis.ehrenfest module
--------------------------
-
-.. automodule:: analysis.ehrenfest
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-analysis.ehrenfest\_cython module
----------------------------------
-
-.. automodule:: analysis.ehrenfest_cython
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-analysis.ehrenfest\_cython module
----------------------------------
-
-.. automodule:: analysis.ehrenfest_cython
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 analysis.fits module
 --------------------
 
 .. automodule:: analysis.fits
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+analysis.imports module
+-----------------------
+
+.. automodule:: analysis.imports
    :members:
    :undoc-members:
    :show-inheritance:
@@ -96,22 +64,6 @@ analysis.rigol module
 ---------------------
 
 .. automodule:: analysis.rigol
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-analysis.run\_ehren\_mp module
-------------------------------
-
-.. automodule:: analysis.run_ehren_mp
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-analysis.setup module
----------------------
-
-.. automodule:: analysis.setup
    :members:
    :undoc-members:
    :show-inheritance:
