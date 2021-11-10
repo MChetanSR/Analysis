@@ -21,7 +21,7 @@ def sigmaBlue(delta, A, s=0):
     sigma_0 = 3*wLen**2/(2*pi)
     calib = 36
     if A == 88:
-        return sigma_0/(4*(delta/Gamma)**2+1+s)
+        return sigma_0/(4*(2*pi*delta/Gamma)**2+1+s)
     elif A == 87:
         zeemanShift = 1.60*calib # shift in spectroscopy in choosing 87^Sr
         delta9half = delta - (zeemanShift-69)
@@ -31,7 +31,7 @@ def sigmaBlue(delta, A, s=0):
         coeff9half = 10/(4*(2*pi*delta9half/Gamma)**2+1+s)
         coeff11half = 12/(4*(2*pi*delta11half/Gamma)**2+1+s)
         return sigma_0*(0.1826**2)*(coeff7half+coeff9half+coeff11half)
-        # the 0.1826 comes from the 6j coefficients for different hyperfine transitions.
+        # the 0.1826 comes from the branching ratio for different hyperfine transitions.
     elif A == 86:
         raise ValueError('The calculation for 86^Sr is not done. Please do it.')
     elif A == 84:

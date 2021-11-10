@@ -1,6 +1,6 @@
 import numpy as np
 #import matplotlib.pyplot as plt
-#import scipy.linalg as ln
+import scipy.linalg as ln
 from scipy.sparse import csr_matrix, kron
 from scipy.sparse import identity as Id
 
@@ -189,3 +189,11 @@ class SU3Basis():
 
     def structureConstant(self, i, j, k):
         return self.f[i-1, j-1, k-1]
+
+    def decompose(self, A):
+        l = self.matrices()
+        M = np.zeros((9,9), dtype=complex)
+        for i in range(9):
+            for j in range(9):
+                M[i, j] = l[j].flatten()[i]
+        return ln.inv(M)@(np.array(A).flatten())

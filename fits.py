@@ -178,7 +178,7 @@ def threeGaussian2DFit(image, p0, bounds, TOF, plot=True, cropSize=6, logNorm=Fa
 
 
 def multipleGaussian2D(X, *args):
-    amplitudes, xos, yos, sigma_xs, sigma_ys, thetas, offsets = np.array(args).reshape((7,5))
+    amplitudes, xos, yos, sigma_xs, sigma_ys, thetas, offsets = np.array(args).reshape((7,8))
     x = X[0]
     y = X[1]
     g = 0
@@ -203,7 +203,7 @@ def multipleGaussian2DFit(image, p0, bounds, TOF, plot=True, cropSize=6, logNorm
     pOpt[2] = p0[2]-cropSize+pOpt[2]
     disQuanta = hbar*(2*pi/(689*nano*87*m_p))*TOF*milli
     dis = disQuanta*2.5/(16*micro)
-    '''
+    #'''
     p0 = [[pOpt[0], pOpt[0]*0.4, pOpt[0]*0.3, pOpt[0]*0.02, pOpt[0]*0.02, pOpt[0]*0.02, pOpt[0]*0.02, pOpt[0]*0.02],
           [pOpt[1], pOpt[1]-dis, pOpt[1], pOpt[1]-dis, pOpt[1], pOpt[1]+dis, pOpt[1]+2*dis, pOpt[1]],
           [pOpt[2], pOpt[2]-dis, pOpt[2]-2*dis, pOpt[2]-3*dis, pOpt[2]-4*dis, pOpt[2]-dis, pOpt[2], pOpt[2]+2*dis],
@@ -224,7 +224,8 @@ def multipleGaussian2DFit(image, p0, bounds, TOF, plot=True, cropSize=6, logNorm
                [pOpt[3]*1.1, pOpt[3]*1.1, pOpt[3]*1.1, pOpt[3]*1.1, pOpt[3]*1.1, pOpt[3]*1.1, pOpt[3]*1.1, pOpt[3]*1.1],
                [pOpt[4]*1.1, pOpt[4]*1.1, pOpt[4]*1.1, pOpt[4]*1.1, pOpt[4]*1.1, pOpt[4]*1.1, pOpt[4]*1.1, pOpt[4]*1.1],
                [pOpt[5]+0.2, pOpt[5]+0.2, pOpt[5]+0.2, pOpt[5]+0.2, pOpt[5]+0.2, pOpt[5]+0.2, pOpt[5]+0.2, pOpt[5]+0.2],
-               [pOpt[6]+150, pOpt[6]+150, pOpt[6]+150, pOpt[6]+150, pOpt[6]+150, pOpt[6]+150, pOpt[6]+150, pOpt[6]+150]])'''
+               [pOpt[6]+150, pOpt[6]+150, pOpt[6]+150, pOpt[6]+150, pOpt[6]+150, pOpt[6]+150, pOpt[6]+150, pOpt[6]+150]])
+    '''
     p0 = [[pOpt[0], pOpt[0] * 0.4, pOpt[0] * 0.3, pOpt[0] * 0.02, pOpt[0] * 0.02],
           [pOpt[1], pOpt[1] - dis, pOpt[1], pOpt[1] - dis, pOpt[1]],
           [pOpt[2], pOpt[2] - dis, pOpt[2] - 2 * dis, pOpt[2] - 3 * dis, pOpt[2] - 4 * dis],
@@ -246,8 +247,8 @@ def multipleGaussian2DFit(image, p0, bounds, TOF, plot=True, cropSize=6, logNorm
      [pOpt[3] * 1.1, pOpt[3] * 1.1, pOpt[3] * 1.1, pOpt[3] * 1.1, pOpt[3] * 1.1],
      [pOpt[4] * 1.1, pOpt[4] * 1.1, pOpt[4] * 1.1, pOpt[4] * 1.1, pOpt[4] * 1.1],
      [pOpt[5] + 0.2, pOpt[5] + 0.2, pOpt[5] + 0.2, pOpt[5] + 0.2, pOpt[5] + 0.2],
-     [pOpt[6] + 150, pOpt[6] + 150, pOpt[6] + 150, pOpt[6] + 150, pOpt[6] + 150]])
-    pOpt, pCov = curve_fit(multipleGaussian2D, X, image.reshape((Nx*Ny)), p0=np.array(p0).reshape((35)), bounds=np.array(bounds).reshape((2, 35)))
+     [pOpt[6] + 150, pOpt[6] + 150, pOpt[6] + 150, pOpt[6] + 150, pOpt[6] + 150]])#'''
+    pOpt, pCov = curve_fit(multipleGaussian2D, X, image.reshape((Nx*Ny)), p0=np.array(p0).reshape((56)), bounds=np.array(bounds).reshape((2, 56)))
     fit = multipleGaussian2D(X, *pOpt).reshape(Ny, Nx)
     if plot == True:
         f, ax = plt.subplots(nrows=1, ncols=4, gridspec_kw={'width_ratios': [4, 0.2, 4, 0.2]}, figsize=(10, 4))
