@@ -74,7 +74,6 @@ def spectroscopy(ODimages, f, d=4,loss=False, plot=True, fileNum='', savefig=Fal
             plt.savefig('spectroscopy results/SpectroscopyResultFor'+fileNum+'.png', transparent=True)
     return pOpt, index # amp, centre, gamma, offset
 
-
 def bv(f, f0, b0, T, s):
     '''
     Function representing convolution of the lorentzian line shape of the red transition and gaussian maxwell
@@ -96,7 +95,6 @@ def bv(f, f0, b0, T, s):
     x = w((2*pi*(f-f0) + 1j*gamma*np.sqrt(1+s)/2)*1e6/(np.sqrt(2)*k*vavg))
     return b0*np.sqrt(pi/8)*(1/(1+s))*(gamma*np.sqrt(1+s)*1e6/(k*vavg))*x.real
 
-
 def bvFit(f, array, p0=None, bounds=None):
     '''
     Function to fit spectroscopy data to real line shape of the transition.
@@ -112,7 +110,6 @@ def bvFit(f, array, p0=None, bounds=None):
     '''
     pOpt, pCov = curve_fit(bv, f, array, p0, bounds=bounds)
     return pOpt, pCov
-
 
 def spectroscopyFaddeva(ODimages, f, imaging_params, plot=True, fileNum='', savefig=False):
     '''

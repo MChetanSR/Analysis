@@ -36,7 +36,6 @@ def BStoDS(*args):
                           [0, eps*np.sin(phi)*ph1, eps*np.cos(phi)*ph2, -np.sqrt(1-eps**2)],
                           [1/np.sqrt(2), 1/np.sqrt(2)*O1/O, 1/np.sqrt(2)*O2/O, 1/np.sqrt(2)*O3/O],
                           [-1/np.sqrt(2), 1/np.sqrt(2)*O1/O, 1/np.sqrt(2)*O2/O, 1/np.sqrt(2)*O3/O]])
-    elif len(args) == 6:
-        # for off resonant coupling
-        raise NotImplementedError
+    else:
+        raise(NotImplementedError)
     return np.transpose(trans)

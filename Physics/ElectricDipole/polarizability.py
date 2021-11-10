@@ -1,5 +1,5 @@
 from scipy.constants import * # all physical constants
-import numpy as np # numpy for array manipulations
+import numpy as np
 # look for sympy documentation for the arguments
 from sympy.physics.wigner import wigner_6j, wigner_3j
 from sympy.physics.wigner import clebsch_gordan as CG
@@ -109,7 +109,6 @@ def tens(j, M, ux, uy, uz):
         for y in [-1, 0, 1]:
             s += (-1)**(M+y)*np.conjugate(u[x+1])*u[-y+1]*np.sqrt(2*j+1)*wigner_3j(1, j, 1, x, -M, y)
     return s
-            
 
 def B_fs(k_i, k_f):
     '''

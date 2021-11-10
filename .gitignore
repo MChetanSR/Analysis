@@ -1,6 +1,7 @@
 .ipynb_checkpoints
 .idea
 *.pyd
+*.onetoc2
 __pycache__
 build
 Result.txt
