@@ -1,6 +1,11 @@
 analysis.Physics package
 ========================
 
+.. automodule:: analysis.Physics
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Subpackages
 -----------
 
@@ -16,6 +21,14 @@ analysis.Physics.OBS module
 ---------------------------
 
 .. automodule:: analysis.Physics.OBS
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+analysis.Physics.allenDeviation module
+--------------------------------------
+
+.. automodule:: analysis.Physics.allenDeviation
    :members:
    :undoc-members:
    :show-inheritance:
@@ -44,30 +57,6 @@ analysis.Physics.ehrenfest module
    :undoc-members:
    :show-inheritance:
 
-analysis.Physics.ehrenfest\_cython module
------------------------------------------
-
-.. automodule:: analysis.Physics.ehrenfest_cython
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-analysis.Physics.ehrenfest\_cython module
------------------------------------------
-
-.. automodule:: analysis.Physics.ehrenfest_cython
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-analysis.Physics.ehrenfest\_cython module
------------------------------------------
-
-.. automodule:: analysis.Physics.ehrenfest_cython
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 analysis.Physics.run\_ehren\_mp module
 --------------------------------------
 
@@ -76,26 +65,10 @@ analysis.Physics.run\_ehren\_mp module
    :undoc-members:
    :show-inheritance:
 
-analysis.Physics.setup module
------------------------------
-
-.. automodule:: analysis.Physics.setup
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 analysis.Physics.spinInDickeBasis module
 ----------------------------------------
 
 .. automodule:: analysis.Physics.spinInDickeBasis
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: analysis.Physics
    :members:
    :undoc-members:
    :show-inheritance:

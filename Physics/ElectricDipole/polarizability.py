@@ -67,11 +67,10 @@ def alphaTensor(F, K, eps):
     '''
     Full polarizability tensor eq. 5 in PRA reference
     
-    Parameters:
-    -----------
-    F: Total angular momentum of the required ground state
-    K: coefficients in irreducible representation
-    eps: polarization vector of the light (E_x, E_y, E_z)
+    Args:
+        F: Total angular momentum of the required ground state
+        K: coefficients in irreducible representation
+        eps: polarization vector of the light (E_x, E_y, E_z)
     '''
     alpha = np.zeros((int(2*F+1), int(2*F+1)), dtype=complex)
     for x in range(int(2*F+1)):
@@ -85,12 +84,11 @@ def alpha(F, mF, K, eps):
     '''
     Polarizability of each mF.
     
-    Parameters:
-    -----------
-    F: Total angular momentum of the required ground state.
-    mF: magnetic quantum number.
-    K: coefficients in irreducible representation
-    eps: polarization vector of the light (E_x, E_y, E_z)
+    Args:
+        F: Total angular momentum of the required ground state.
+        mF: magnetic quantum number.
+        K: coefficients in irreducible representation
+        eps: polarization vector of the light (E_x, E_y, E_z)
     '''
     alpha = 0
     for j in range(3):
@@ -114,10 +112,9 @@ def B_fs(k_i, k_f):
     '''
     Branching ratio for fine structure.
     
-    Parameters:
-    -----------
-    k_i: excited state
-    k_f: ground state
+    Args:
+        k_i: excited state
+        k_f: ground state
     '''
     return (2*k_i.J+1)*(2*k_f.L+1)*(wigner_6j(k_f.J, 1, k_i.J, k_i.L, k_i.S, k_f.L))**2
 
@@ -125,10 +122,9 @@ def B_hfs(k_i, k_f):
     '''
     Branching ratio of hyperfine structure
     
-    Parameters:
-    -----------
-    k_i: excited state
-    k_f: ground state
+    Args:
+        k_i: excited state
+        k_f: ground state
     '''
     return (2*k_i.F+1)*(2*k_f.J+1)*(wigner_6j(k_f.F, 1, k_i.F, k_i.J, k_i.I, k_f.J))**2
 
@@ -137,13 +133,12 @@ def K(j, k_f, k_is, w_l, params):
     Coefficients in irreducible representation of polarizability as shown in
     equation 5 of PRA reference.
     
-    Parameters:
-    -----------
-    j: 0 for scalar, 1 for vector, 2 for tensor coefficient
-    k_f: ground state
-    k_is: list of all excited states
-    w_l: wavelength
-    params: spectroscopic parameters of all excited states freq., z costant, decay rate
+    Args:
+        j: 0 for scalar, 1 for vector, 2 for tensor coefficient
+        k_f: ground state
+        k_is: list of all excited states
+        w_l: wavelength
+        params: spectroscopic Args of all excited states freq., z costant, decay rate
     '''
     w_0s, zs, rates = params[:,0]*1e15, params[:,1], params[:,2]*1e6
     summation = 0

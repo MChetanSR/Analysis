@@ -4,9 +4,19 @@ from PIL import Image
 import matplotlib.pyplot as plt
 from warnings import warn
 from .AndorSifReader import AndorSifFile
-from .fits import gaussian2DFit
+import json
+import importlib.resources
 from scipy.constants import *
 
+class ImagingParams():
+    def __init__(self):
+        with importlib.resources.open_text("analysis", "params.json") as file:
+            self.params = json.load(file)
+            file.close()
+    def update(self, key, value):
+        with importlib.resources.open_text("analysis", "params.json") as file:
+            self.params[key] = value
+            file.close()
 
 
 class ShadowImage(object):
@@ -51,6 +61,7 @@ class ShadowImage(object):
                   No. of images in the file is not a multiple of 3.')
         self.n = self.im.n_frames//3
         self.frames = self.images()
+        self.params = ImagingParams().params
 
     def images(self):
         """
@@ -192,41 +203,41 @@ class ShadowImage(object):
             r = 'No description to show!'
         return r
 
-    def redProbeIntensity(self, params, ROI):
+    def redProbeIntensity(self, ROI):
         """
-        Returns intensity(:math:`\mu W/cm^2`), power(:math:`W`), waists :math:`w_x` and :math:`w_x`.
+        Returns intensity (:math:`\mu W/cm^2`) and power (:math:`\mu W`)
         """
         try:
             probeImage = self.averagedIncidence[0][ROI[0]:ROI[1], ROI[2]:ROI[3]]
         except AttributeError:
             print("Call averagedSignalOD to calculate averagedIncidece before calling probeIntensity.")
             return
-        imConstant = params['binning']*params['pixelSize']/params['magnification']
+        imConstant = self.params['binning']*self.params['pixelSize']/self.params['magnification']
         totalCount = np.sum(np.sum(probeImage))
         area = len(probeImage)*len(probeImage[0])*imConstant**2
         if self.ext=='.tif': # for PCO panda 4.2 bi camera red imaging
-            photons = totalCount*0.8/(0.85)
+            photons = totalCount*0.8/(self.params['quantum efficiency'])
             energy = photons*h*c/(689*nano)
             power = energy/(0.95*80*micro) # 0.95 to account for filter and losses on optics
             intensity = (power/1e-6)/(area*10**4) # in micro Watt/cm^2
-            return intensity, power
+            return intensity, power/1e-6
         elif self.ext == '.sif': # for andor
             raise NotImplementedError
     
-    def blueProbeIntensity(self, params, ROI):
+    def blueProbeIntensity(self, ROI):
         """
-        Returns intensity(micro Watt/cm^2), power(W)
+        Returns intensity (:math:`\mu W/cm^2`) and power (:math:`\mu W`)
         """
         try:
             probeImage = self.averagedIncidence[0][ROI[0]:ROI[1], ROI[2]:ROI[3]]
         except AttributeError:
             print("Call averagedSignalOD to calculate averagedIncidece before calling probeIntensity.")
             return
-        imConstant = params['binning']*params['pixelSize']/params['magnification']
+        imConstant = self.params['binning']*self.params['pixelSize']/self.params['magnification']
         totalCount = np.sum(np.sum(probeImage))
         area = len(probeImage)*len(probeImage[0])*imConstant**2
         if self.ext=='.tif': # for PCO panda 4.2 bi camera blue imaging
-            photons = totalCount*0.8/(0.85)
+            photons = totalCount*0.8/(self.params['quantum efficiency'])
             energy = photons*h*c/(461*nano)
             power = energy/(0.95*20*micro) # 0.95 to account for filter and losses on optics
             intensity = (power/1e-6)/(10**4*area) # in micro Watt/cm^2
@@ -345,29 +356,6 @@ class FluorescenceImage(object):
             f.colorbar(a, ax=ax[i])
         plt.tight_layout()
         return None
-    
-    
+
     def __str__(self):
         return str(self.tags)
-
-
-class TOFImageInGF(FluorescenceImage):
-    '''
-    A class to extract fluorescence from different peaks of time of flight images of atoms expanding in gauge field.
-
-    Parameters:
-        filePath: str, Path to the multiple-image file
-    '''
-    def __init__(self, filePath):
-        super().__init__(filePath)
-
-    def peakAmplitudes(self, TOF):
-        '''
-
-        Args:
-            TOF: time of flight in ms.
-        Returns:
-
-        '''
-
-        pass

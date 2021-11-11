@@ -1,6 +1,11 @@
 analysis package
 ================
 
+.. automodule:: analysis
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Subpackages
 -----------
 
@@ -12,25 +17,10 @@ Subpackages
 Submodules
 ----------
 
-analysis.AndorSifReader module
-------------------------------
-
-.. automodule:: analysis.AndorSifReader
-   :undoc-members:
-   :show-inheritance:
-
 analysis.Images module
 ----------------------
 
 .. automodule:: analysis.Images
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-analysis.PicoMatTools module
-----------------------------
-
-.. automodule:: analysis.PicoMatTools
    :members:
    :undoc-members:
    :show-inheritance:
@@ -43,18 +33,18 @@ analysis.fits module
    :undoc-members:
    :show-inheritance:
 
-analysis.imports module
------------------------
-
-.. automodule:: analysis.imports
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 analysis.numberOfAtoms module
 -----------------------------
 
 .. automodule:: analysis.numberOfAtoms
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+analysis.picoMatTools module
+----------------------------
+
+.. automodule:: analysis.picoMatTools
    :members:
    :undoc-members:
    :show-inheritance:
@@ -87,14 +77,6 @@ analysis.tripodTools module
 ---------------------------
 
 .. automodule:: analysis.tripodTools
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: analysis
    :members:
    :undoc-members:
    :show-inheritance:

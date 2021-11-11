@@ -1,11 +1,10 @@
 from multiprocessing import Process
 import numpy as np
-from ehrenfest_cython import EhrenfestSU2, omegaConstant, omegaRamp, omegaGaussian, Map
+from .ehrenfest_cython import EhrenfestSU2, omegaConstant, omegaRamp, omegaGaussian, Map
 import matplotlib.pyplot as  plt
 import time
 import sys
 import os
-plt.style.use('./Styles/Helvetica_bright.mplstyle')
 #plt.style.use('./Styles/DarkBackground.mplstyle')
 
 def run_ehrenfest(t_r, px, py):
@@ -18,6 +17,7 @@ def run_ehrenfest(t_r, px, py):
     np.savetxt('result'+str(os.getpid())+'.txt', x)
 
 if __name__=='__main__':
+    plt.style.use(os.path.abspath('../Styles/Helvetica_bright.mplstyle'))
     if 'Result.txt' in os.listdir():
         os.remove('Result.txt')
     t_r, px, py = map(float, sys.argv[1:])

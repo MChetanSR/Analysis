@@ -3,4 +3,5 @@ from .numberOfAtoms import *
 from .spectrum import *
 from .tripodTools import *
 from .Physics import *
-from .PicoMatTools import *
+from .picoMatTools import *
+from .fits import *
