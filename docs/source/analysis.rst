@@ -16,7 +16,6 @@ analysis.AndorSifReader module
 ------------------------------
 
 .. automodule:: analysis.AndorSifReader
-   :members:
    :undoc-members:
    :show-inheritance:
 
