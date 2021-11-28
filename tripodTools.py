@@ -39,3 +39,30 @@ def BStoDS(*args):
     else:
         raise(NotImplementedError)
     return np.transpose(trans)
+
+def Ds(p1, p2, p3, p4, p5):
+    '''
+    Given the bare state populations of five +ve :math:`m_F` ground states, calculates the state in bark state basis.
+
+    .. math:: |\psi \\rangle = d_l e^{i \\alpha} |D_l \\rangle + d_0|D_0 \\rangle+ d_r e^{i \\beta}|D_r \\rangle
+
+
+    Parameters:
+        p1: population of :math:`|m_F = 1/2 \\rangle`
+        p2: population of :math:`|m_F = 3/2 \\rangle`
+        p3: population of :math:`|m_F = 5/2 \\rangle`
+        p4: population of :math:`|m_F = 7/2 \\rangle`
+        p5: population of :math:`|m_F = 9/2 \\rangle`
+    Returns:
+        a tuple of :math:`d_l`, :math:`d_0`, :math:`d_r`, :math:`\\alpha`, :math:`\\beta` and
+        state array :math:`|\psi \\rangle`
+    '''
+    d0 = np.sqrt(2*p3)
+    dl = np.sqrt(abs(p1+p2-p3/2))
+    dr = np.sqrt(abs(p4+p5-p3/2))
+    alpha = np.arctan2(np.sqrt(abs(4*p3*(p1+p2-p3/2-(p1-p2)**2))), p1-p2)
+    beta = np.arctan2(np.sqrt(abs(4*p3*(p4+p5-p3/2-(p5-p4)**2))), p5-p4)
+    state = [dl*np.exp(1j*alpha), d0, dr*np.exp(1j*beta)]
+    return dl, d0, dr, alpha, beta, state
+
+

@@ -56,11 +56,11 @@ class OBSolve(object):
     def __f(self, t, rho):
         return np.dot(self.Liovellian(t), rho)
 
-    def solve(self, initialCondition):
+    def solve(self, initialCondition, max_step=np.inf, dense_output=False):
         t0 = self.t[0]
         tf = self.t[-1]
         rho0 = initialCondition
-        sol = solve_ivp(self.__f, (t0, tf), rho0, method='RK45', t_eval=self.t)
+        sol = solve_ivp(self.__f, (t0, tf), rho0, method='BDF', max_step=max_step, dense_output=dense_output, t_eval=self.t)
         self.rho = sol.y
         return self.rho, sol
 
@@ -79,7 +79,7 @@ class OBSolve(object):
             t0 = self.t[0]
             tf = self.t[-1]
             rho0 = initialCondition
-            sol = solve_ivp(self.__f, (t0, tf), rho0, method='RK45', t_eval=self.t)
+            sol = solve_ivp(self.__f, (t0, tf), rho0, method='BDF', dense_output=True, t_eval=self.t)
             result[i] = sol.y
         self.HArgs[-1] = [d1, d2, d3]
         return np.mean(result, axis=0)

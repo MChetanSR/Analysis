@@ -8,14 +8,36 @@ import json
 import importlib.resources
 from scipy.constants import *
 
-class ImagingParams():
+class rcParams():
+    """
+    A class that is designed to read and update resource parameters of the package. These parameters are usually the
+    hardware parameters that are used while converting certain digital values to real units. Currently these are
+    imaging parameters like magnification, pixel size etc. The idea behind this is that once these parameters are set,
+    these are used by many function and classes throughout the package without having to explicitly pass them. Open
+    the file rcParams.json using the notepad to see the current parameters used throughout the library.
+
+    Attributes:
+
+        params: dict, current parameters used by the package
+    """
     def __init__(self):
-        with importlib.resources.open_text("analysis", "params.json") as file:
+        with importlib.resources.open_text("analysis", "rcParams.json") as file:
             self.params = json.load(file)
             file.close()
     def update(self, key, value):
-        with importlib.resources.open_text("analysis", "params.json") as file:
+        """
+        A method to update the rcParams.
+
+        Args:
+
+            key: string, key of the parameter. Careful about the spelling of the key. If its wrong,
+                then you will add another parameter with the wrong spelling instead of updating the
+                desired parameter.
+            value: value of the parameter to update.
+        """
+        with importlib.resources.open_text("analysis", "rcParams.json") as file:
             self.params[key] = value
+            json.dump(self.params, file)
             file.close()
 
 
@@ -30,7 +52,9 @@ class ShadowImage(object):
         filePath: str, Path to the multiple-image file
 
     Attributes:
+
         filePath: str, Path to the multiple-image file
+        ext: str, extension of the image file passed.
         im: PIL.TiffImagePlugin.TiffImageFile or AndorSifFile._SifFrames
         n: int, total number of data = number of images/3
         frames: ndarray, all the frames in the image file
@@ -55,13 +79,13 @@ class ShadowImage(object):
             self.im = AndorSifFile(filePath).signal
             self.tags = self.im.props
         else:
-            raise IOError('Invalid file!')
+            raise NotImplementedError('ShadowImage is implemeted to read only .tif or sif. files.')
         if self.im.n_frames%3!=0:
             warn('Not a valid shadow image. \
                   No. of images in the file is not a multiple of 3.')
         self.n = self.im.n_frames//3
         self.frames = self.images()
-        self.params = ImagingParams().params
+        self.params = rcParams().params
 
     def images(self):
         """
@@ -80,8 +104,10 @@ class ShadowImage(object):
     def opticalDepth(self, xSpan, ySpan):
         """
         Returns the optical depth calculated from the ShadowImage as an ndarray.
-        xSpan: a list containing the range of pixels of the image in x direction.
-        ySpan: a list containing the range of pixels of the image in y direction.
+
+        Parameters:
+            xSpan: list, containing the range of pixels of the image in x direction.
+            ySpan: list, containing the range of pixels of the image in y direction.
         """
         self.transmission = np.zeros((self.n, self.im.height, self.im.width))
         self.incidence = np.zeros((self.n, self.im.height, self.im.width))
@@ -103,8 +129,13 @@ class ShadowImage(object):
     def opticalDepthAveraged(self, nAveraging):
         """
         Calculates the optical depth from every triad of the images and
-        averages it with nAveraging as the Superloop in the experiment.
-        Returns an ndarray of length equal to Serie in the experiment.
+        the take average with nAveraging as the Superloop in the experiment.
+
+        Parameters:
+            nAveraging: int, number of averaging to be used.
+
+        Returns:
+            an ndarray of length equal to Serie in the experiment.
         """
         self.nAveraging = nAveraging
         self.nSamples = int(self.n/nAveraging)
@@ -121,7 +152,13 @@ class ShadowImage(object):
         """
         Calculates the average signal with nAveraging being the Superloop
         in the experiment and finds the optical depth after the averaging.
-        Returns an ndarray of length equal to Serie in the experiment.
+
+        Parameters:
+            nAveraging: int, number of averaging to be used.
+            truncate: tuple or list, the superloops to be ignored while averaging. Default is ().
+
+        Returns:
+            an ndarray of length equal to Serie in the experiment.
         """
         self.nAveraging = nAveraging
         self.nSamples = int(self.n/nAveraging)
@@ -146,7 +183,13 @@ class ShadowImage(object):
         """
         Calculates the average signal with nAveraging being the loops
         in the experiment and finds the optical depth after the averaging.
-        Returns an ndarray of length equal to Serie in the experiment.
+
+        Parameters:
+            nAveraging: int, number of averaging to be used.
+            truncate: tuple or list, the superloops to be ignored while averaging. Default is ().
+
+        Returns:
+            an ndarray of length equal to Serie in the experiment.
         """
         self.nAveraging = nAveraging
         self.nSamples = int(self.n/nAveraging)
@@ -171,6 +214,11 @@ class ShadowImage(object):
         """
         Calculates and plots the average signal with nAveraging being the Superloop
         in the experiment and finds the optical depth after the averaging.
+
+        Parameters:
+            nAveraging: int, number of averaging to be used.
+            ROI: list, ROI in the images to be plotted.
+            truncate: tuple or list, the superloops to be ignored while averaging. Default is ().
         Returns None.
         """
         OD = self.averagedSignalOD(nAveraging, truncate)
@@ -187,6 +235,9 @@ class ShadowImage(object):
         Adds comment to the tif image under the ImageDescription tag
         and replaces it silently with the new image, if the user has the
         permissions.
+
+        Parameters:
+            comment: str, comment to be added.
         """
         path, ext = os.path.splitext(self.filePath)
         newPath = path+'cmtd'+ext
@@ -195,7 +246,8 @@ class ShadowImage(object):
 
     def description(self):
         """
-        Returns the ImageDescription tag of the tiff image file.
+        Returns:
+             the ImageDescription tag of the tiff image file.
         """
         try:
             r = self.tags['ImageDescription']
@@ -205,7 +257,14 @@ class ShadowImage(object):
 
     def redProbeIntensity(self, ROI):
         """
-        Returns intensity (:math:`\mu W/cm^2`) and power (:math:`\mu W`)
+        Estimates red probe intensity and power from the reference image using the losses in imaging system
+        and quantum effeiciency of the camera for red light. rcParams used in calculating the intensity are
+        ``quantum efficiency``, ``pixelSize``, ``binning`` and ``magnification``.
+
+        Parameters:
+            ROI: list, ROI in which to estimate the intensity.
+        Returns:
+             intensity (:math:`\mu W/cm^2`) and power (:math:`\mu W`)
         """
         try:
             probeImage = self.averagedIncidence[0][ROI[0]:ROI[1], ROI[2]:ROI[3]]
@@ -226,7 +285,14 @@ class ShadowImage(object):
     
     def blueProbeIntensity(self, ROI):
         """
-        Returns intensity (:math:`\mu W/cm^2`) and power (:math:`\mu W`)
+        Estimates blue probe intensity and power from the reference image using the losses in imaging system
+        and quantum effeiciency of the camera for red light. rcParams used in calculating the intensity are
+        ``quantum efficiency``, ``pixelSize``, ``binning`` and ``magnification``.
+
+        Parameters:
+            ROI: list, ROI in which to estimate the intensity.
+        Returns:
+             intensity (:math:`\mu W/cm^2`) and power (:math:`\mu W`)
         """
         try:
             probeImage = self.averagedIncidence[0][ROI[0]:ROI[1], ROI[2]:ROI[3]]
@@ -359,3 +425,4 @@ class FluorescenceImage(object):
 
     def __str__(self):
         return str(self.tags)
+

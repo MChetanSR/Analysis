@@ -34,6 +34,23 @@ def omegaDoubleGaussian(t,amp, Tc1, Tc2, sigma):
         result = amp*(np.exp(-(t-Tc1)**2/(4*sigma**2))+np.exp(-(t-Tc2)**2/(4*sigma**2)))
     return result
 
+def Map(fun, vec, args, dtype=float):
+    '''
+    Maps a function to a vector.
+
+    Parameters:
+        fun: function to be mapped
+        vec: 1d-array, the vector to be mapped to the function
+        args: tuple, secondary arguments to the function
+        dtype: Default numpy.float, the data type of the elements of the array
+    Returns:
+        1d-array with elements of given dtype mapped by the specified function.
+    '''
+    result = np.zeros(len(vec), dtype=dtype)
+    for i, v in enumerate(vec):
+        result[i] = fun(v, *args)
+    return result
+
 class EhrenfestSU2():
     def __init__(self, omega1, omega2, omega3, omega1_args, omega2_args, omega3_args):
         self.omega1 = omega1
