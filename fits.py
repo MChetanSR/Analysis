@@ -251,7 +251,7 @@ def multipleGaussian2DFit(image, p0, bounds, TOF, plot=True, cropSize=6, toleren
      [pOpt[4] * 1.1, pOpt[4] * 1.1, pOpt[4] * 1.1, pOpt[4] * 1.1, pOpt[4] * 1.1],
      [pOpt[5] + 0.2, pOpt[5] + 0.2, pOpt[5] + 0.2, pOpt[5] + 0.2, pOpt[5] + 0.2],
      [pOpt[6] + 150, pOpt[6] + 150, pOpt[6] + 150, pOpt[6] + 150, pOpt[6] + 150]])#'''
-    pOpt, pCov = curve_fit(multipleGaussian2D, X, image.reshape((Nx*Ny)), p0=np.array(p0).reshape((56)), bounds=np.array(bounds).reshape((2, 56)), jac='3-point')
+    pOpt, pCov = curve_fit(multipleGaussian2D, X, image.reshape((Nx*Ny)), p0=np.array(p0).reshape((56)), bounds=np.array(bounds).reshape((2, 56)))
     fit = multipleGaussian2D(X, *pOpt).reshape(Ny, Nx)
     if plot == True:
         f, ax = plt.subplots(nrows=1, ncols=4, gridspec_kw={'width_ratios': [4, 0.2, 4, 0.2]}, figsize=(10, 4))
