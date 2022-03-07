@@ -202,7 +202,8 @@ def multipleGaussian2DFit(image, p0, bounds, TOF, plot=True, cropSize=6, toleren
     pOpt[1] = p0[1]-cropSize+pOpt[1]
     pOpt[2] = p0[2]-cropSize+pOpt[2]
     disQuanta = hbar*(2*pi/(689*nano*87*m_p))*TOF*milli
-    d = disQuanta*2.5/(16*micro)
+    dis = disQuanta*2.5/(16*micro)
+    d = dis
     #'''
     p0 = [[pOpt[0], pOpt[0]*0.4, pOpt[0]*0.3, pOpt[0]*0.02, pOpt[0]*0.02, pOpt[0]*0.02, pOpt[0]*0.02, pOpt[0]*0.02],
           [pOpt[1], pOpt[1]-d, pOpt[1], pOpt[1]-d, pOpt[1], pOpt[1]+d, pOpt[1]+d, pOpt[1]-d],
@@ -237,7 +238,7 @@ def multipleGaussian2DFit(image, p0, bounds, TOF, plot=True, cropSize=6, toleren
           [pOpt[5], pOpt[5], pOpt[5], pOpt[5], pOpt[5]],
           [pOpt[6], pOpt[6], pOpt[6], pOpt[6], pOpt[6]]]
     bounds = (
-    [[pOpt[0] * 0.0, pOpt[0] * 0.0, pOpt[0] * 0.0, pOpt[0] * 0.0, pOpt[0] * 0.0],
+    [[pOpt[0] * -0.1, pOpt[0] * -0.1, pOpt[0] * -0.1, pOpt[0] * -0.1, pOpt[0] * -0.1],
      [pOpt[1] - 0.1*dis, pOpt[1] - dis * 1.1, pOpt[1] - 0.1 * dis, pOpt[1] - dis * 1.1, pOpt[1] - 0.1*dis],
      [pOpt[2] - 0.1*dis, pOpt[2] - dis * 1.1, pOpt[2] - 2 * dis * 1.1, pOpt[2] - 3 * dis * 1.1, pOpt[2] - 4 * dis * 1.1],
      [pOpt[3] * 0.9, pOpt[3] * 0.9, pOpt[3] * 0.9, pOpt[3] * 0.9, pOpt[3] * 0.9],

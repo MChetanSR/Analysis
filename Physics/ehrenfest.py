@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.integrate import solve_ivp, odeint
-from .basisMatrices import GellMannBasis, PauliBasis
+from basisMatrices import GellMannBasis, PauliBasis
 
 Id, sigx, sigy, sigz = PauliBasis().matrices()
 
@@ -171,33 +171,24 @@ def SU3_GaugeField(theta_l, phi_l, theta_r, phi_r):
     cot_theta_l = 1/np.tan(theta_l)
     cot_theta_r = 1/np.tan(theta_r)
     alpha0 = np.sqrt(1+cot_theta_l**2+cot_theta_r**2)
-    const1 = (cot_theta_l**2*(1+np.cos(phi_l)**2)-cot_theta_r**2*(1+np.cos(phi_r)**2))/(alpha0**2)
-    const2 = (cot_theta_l**2*np.sin(phi_l)**2+cot_theta_r**2*np.sin(phi_r)**2)/(alpha0**2)
-    e1 = 1*(np.sin(phi_l)**2-np.sin(phi_r)**2+const1)/3
-    e2 = 1*(np.cos(phi_l)**2+np.cos(phi_r)**2+const2)/3
-    Ax1 = np.sin(phi_l)*np.cos(phi_l)*cot_theta_l/alpha0
-    Ax2 = 0
-    Ax3 = 0.5*(1+np.sin(phi_l)**2-const1)
-    Ax4 = 0
-    Ax5 = 0
-    Ax6 = -np.sin(phi_r)*np.cos(phi_r)*cot_theta_r/(alpha0)
-    Ax7 = 0
-    Ax8 = -(np.sqrt(3)/2)*(-(1+np.sin(phi_r)**2)-e1)
-    Ay1 = -Ax1
-    Ay2 = 0
-    Ay3 = 0.5*(np.cos(phi_l)**2-const2)
-    Ay4 = 0
-    Ay5 = 0
-    Ay6 = Ax6
-    Ay7 = 0
-    Ay8 = -(np.sqrt(3)/2)*((np.cos(phi_r)**2)-e2)
-    Ax = np.array([e1, Ax1, Ax2, Ax3, Ax4, Ax5, Ax6, Ax7, Ax8])
-    Ay = np.array([e2, Ay1, Ay2, Ay3, Ay4, Ay5, Ay6, Ay7, Ay8])
-    l = GellMannBasis().matrices()
-    A_x, A_y = np.zeros((2, 3, 3), dtype=complex)
-    for i in range(9):
-        A_x += Ax[i]*l[i]
-        A_y += Ay[i]*l[i]
+    A_x = np.zeros((3, 3))
+    A_y = np.zeros((3, 3))
+
+    A_x[0, 0] = 3 + np.sin(phi_l)**2
+    A_x[1, 1] = (1/alpha0**2)*(cot_theta_l**2*(4-np.sin(phi_l)**2)+2+cot_theta_r**2*np.sin(phi_r)**2)
+    A_x[2, 2] = np.cos(phi_r)**2
+    A_x[0, 1] = cot_theta_l * np.sin(phi_l) * np.cos(phi_l)/alpha0
+    A_x[1, 2] = -cot_theta_r * np.sin(phi_r) * np.cos(phi_r) / alpha0
+    A_x[1, 0] = A_x[0, 1]
+    A_x[2, 1] = A_x[1, 2]
+
+    A_y[0, 0] = np.cos(phi_l)**2
+    A_y[1, 1] = (1/alpha0**2)*(cot_theta_l**2*np.sin(phi_l)**2 + cot_theta_r**2*np.sin(phi_r)**2)
+    A_y[2, 2] = np.cos(phi_r)**2
+    A_y[0, 1] = -cot_theta_l * np.sin(phi_l) * np.cos(phi_l) / alpha0
+    A_y[1, 2] = -cot_theta_r * np.sin(phi_r) * np.cos(phi_r) / alpha0
+    A_y[1, 0] = A_y[0, 1]
+    A_y[2, 1] = A_y[1, 2]
     return A_x, A_y
 
 class EhrenfestSU3:

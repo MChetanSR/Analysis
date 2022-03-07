@@ -29,8 +29,8 @@ legend.handlelength : 0.5
 
 font.family : sans-serif
 font.sans-serif : Helvetica
-mathtext.fontset : stixsans
-mathtext.default : regular
+mathtext.fontset : stix
+mathtext.default : it
 
 figure.figsize : 4.98, 3.486
 figure.autolayout: True
