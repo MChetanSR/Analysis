@@ -54,7 +54,7 @@ class GellMannBasis():
     def structureConstant(self, i, j, k):
         return self.f[i-1, j-1, k-1]
 
-    def decompose(self, A):
+    def decompose2(self, A):
         l = self.matrices()
         M = np.zeros((9,9), dtype=complex)
         for i in range(9):
@@ -64,3 +64,18 @@ class GellMannBasis():
             return ln.inv(M) @ (np.array(A).flatten())
         except ln.LinAlgError:
             raise (ln.LinAlgError, "Matrix singular! Unique decomposition doesn't exist!")
+
+    def decompose(self, A):
+        l = self.matrices()
+        result = np.zeros(9)
+        for i, ll in enumerate(l):
+            result[i] = np.trace(A@ll)/2 # Since, Gellmann matrices are trace normalized to 2
+        return result
+
+    def compose(self, decomposition):
+        assert len(decomposition)==9, 'Provided decomposition is not of size 9!'
+        l = self.matrices()
+        result = np.zeros((3,3), dtype=complex)
+        for i in range(9):
+            result += decomposition[i]*l[i]
+        return result
