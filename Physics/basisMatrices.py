@@ -11,7 +11,7 @@ class PauliBasis():
         sigy = np.array([[0, -1j], [1j, 0]])
         sigz = np.array([[1, 0], [0, -1]])
         Id = np.eye(2)
-        return np.array([Id, sigx, sigy, sigx])
+        return np.array([Id, sigx, sigy, sigz])
 
     def decompose(self, A):
         assert np.array(A).shape==(2,2), "Not a 2x2 matrix to decompose in pauli basis."

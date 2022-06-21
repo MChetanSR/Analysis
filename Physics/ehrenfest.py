@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.integrate import solve_ivp, odeint
-from basisMatrices import GellMannBasis, PauliBasis
+from .basisMatrices import GellMannBasis, PauliBasis
 
 Id, sigx, sigy, sigz = PauliBasis().matrices()
 
@@ -167,6 +167,27 @@ def mixingAngles(omega_1, omega_2, omega_3):
     phi = np.arctan2(abs(omega_2), abs(omega_1))
     return theta, phi
 
+def mixingAnglesSU2(omega_1, omega_2, omega_3):
+    omega = np.sqrt(abs(omega_1)**2+abs(omega_2)**2+abs(omega_3)**2)
+    theta = np.arccos(abs(omega_3)/omega)
+    phi = np.arctan2(abs(omega_1), abs(omega_2))
+    return theta, phi
+
+def SU2_GaugeField(alpha, beta):
+    A11x = (1+np.sin(beta)**2)
+    A12x = 0.5*np.cos(alpha)*np.sin(2*beta)
+    A22x = (np.cos(alpha)**2)*(1+np.cos(beta)**2)
+    A11y = np.cos(beta)**2
+    A12y = -0.5*np.cos(alpha)*np.sin(2*beta)
+    A22y = (np.cos(alpha)**2)*np.sin(beta)**2
+    return np.array([[A11x, A12x], [A12x, A22x]]), np.array([[A11y, A12y], [A12y, A22y]])
+
+def SU2_ScalarTerm(alpha, beta):
+    W11 = -(1+np.sin(beta)**2)
+    W22 = -(np.cos(alpha)**2)*np.sin(beta)**2
+    W12 = -0.5*np.cos(alpha)*np.sin(2*beta)
+    return np.array([[W11, W12], [W12, W22]])
+
 def SU3_GaugeField(theta_l, phi_l, theta_r, phi_r):
     cot_theta_l = 1/np.tan(theta_l)
     cot_theta_r = 1/np.tan(theta_r)
@@ -190,6 +211,17 @@ def SU3_GaugeField(theta_l, phi_l, theta_r, phi_r):
     A_y[1, 0] = A_y[0, 1]
     A_y[2, 1] = A_y[1, 2]
     return A_x, A_y
+
+def SU3_ScalarTerm(theta_l, phi_l, theta_r, phi_r):
+    cot_theta_l = 1/np.tan(theta_l)
+    cot_theta_r = 1/np.tan(theta_r)
+    alpha0 = np.sqrt(1+cot_theta_l**2+cot_theta_r**2)
+    Q = np.array([[3*np.sin(phi_l)**2+5, 1.5*np.sin(2*phi_l)/alpha0/np.tan(theta_l), 0],
+                  [1.5*np.sin(2*phi_l)/alpha0/np.tan(theta_l),
+                   ((5+3*np.cos(phi_l)**2)/np.tan(theta_l)**2+np.sin(phi_r)**2/np.tan(theta_r)**2+2)/(alpha0**2),
+                   -0.5*np.sin(2*phi_r)/alpha0/np.tan(theta_r)],
+                  [0, -0.5*np.sin(2*phi_r)/alpha0/np.tan(theta_r), np.cos(phi_r)**2]])
+    return -Q
 
 class EhrenfestSU3:
     def __init__(self, Tripod_l, Tripod_r):
@@ -238,16 +270,21 @@ class EhrenfestSU3:
         py = np.sqrt(T)*np.random.randn(N)+p_y
         self.raw = np.zeros((N, len(y0), len(t)))
         for i in range(N):
-            yreal = odeint(self._eom, y0, t, args=(px[i], py[i]))
-            y = yreal
-            self.raw[i] = y[:, 0], y[:, 1], y[:, 2], y[:, 3], y[:, 4], y[:, 5], y[:, 6], y[:, 7]
+            if N==1:
+                yreal = odeint(self._eom, y0, t, args=(p_x, p_y))
+                y = yreal
+                self.raw[i] = y[:, 0], y[:, 1], y[:, 2], y[:, 3], y[:, 4], y[:, 5], y[:, 6], y[:, 7]
+            else:
+                yreal = odeint(self._eom, y0, t, args=(px[i], py[i]))
+                y = yreal
+                self.raw[i] = y[:, 0], y[:, 1], y[:, 2], y[:, 3], y[:, 4], y[:, 5], y[:, 6], y[:, 7]
         self.result = np.mean(self.raw, axis=0)
         return self.result
 
     def bareStatePop(self, t):
         l = GellMannBasis().matrices()
-        theta_l, phi_l = self.t_l.mixingAngles(t)
-        theta_r, phi_r = self.t_r.mixingAngles(t)
+        theta_l, phi_l = np.vectorize(self.t_l.mixingAngles)(t)
+        theta_r, phi_r = np.vectorize(self.t_r.mixingAngles)(t)
         cot_theta_l = 1 / np.tan(theta_l)
         cot_theta_r = 1 / np.tan(theta_r)
         alpha0 = np.sqrt(1 + cot_theta_l**2 + cot_theta_r **2)
@@ -266,5 +303,30 @@ class EhrenfestSU3:
             rho_D = l[0]/3+np.zeros((3,3), dtype=complex)
             for j in range(8):
                 rho_D += self.result[j, i]*l[j+1]
+            rho[:,:, i] = np.dot(np.dot(Ddag[:,:,i], rho_D), D[:, :, i])
+        return np.array([abs(rho[0,0]), abs(rho[1,1]), abs(rho[2,2]), abs(rho[3,3]), abs(rho[4,4])])
+
+    def bareStatePop2(self, t, result):
+        l = GellMannBasis().matrices()
+        theta_l, phi_l = np.vectorize(self.t_l.mixingAngles)(t)
+        theta_r, phi_r = np.vectorize(self.t_r.mixingAngles)(t)
+        cot_theta_l = 1 / np.tan(theta_l)
+        cot_theta_r = 1 / np.tan(theta_r)
+        alpha0 = np.sqrt(1 + cot_theta_l**2 + cot_theta_r **2)
+        z = np.zeros(len(theta_l))
+        o = np.ones(len(theta_l))
+        rho = np.zeros((5, 5, len(theta_l)), dtype=complex)
+        D_l = np.array([np.sin(phi_l), -np.cos(phi_l), z, z, z])
+        D_0 = np.array([(1 / np.tan(theta_l)) * np.cos(phi_l),
+                        (1 / np.tan(theta_l)) * np.sin(phi_l), -o,
+                        (1 / np.tan(theta_r)) * np.sin(phi_r),
+                        (1 / np.tan(theta_r)) * np.cos(phi_r)])/alpha0
+        D_r = np.array([z, z, z, -np.cos(phi_r), np.sin(phi_r)])
+        D = np.array([D_l, D_0, D_r])
+        Ddag = np.transpose(D, (1, 0, 2))
+        for i in range(len(theta_l)):
+            rho_D = l[0]/3+np.zeros((3,3), dtype=complex)
+            for j in range(8):
+                rho_D += result[j, i]*l[j+1]
             rho[:,:, i] = np.dot(np.dot(Ddag[:,:,i], rho_D), D[:, :, i])
         return np.array([abs(rho[0,0]), abs(rho[1,1]), abs(rho[2,2]), abs(rho[3,3]), abs(rho[4,4])])
