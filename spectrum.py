@@ -111,7 +111,7 @@ def bvFit(f, array, p0=None, bounds=None):
     pOpt, pCov = curve_fit(bv, f, array, p0, bounds=bounds)
     return pOpt, pCov
 
-def spectroscopyFaddeva(ODimages, f, imaging_params, plot=True, fileNum='', savefig=False):
+def spectroscopyFaddeva(ODimages, f, imaging_params, plot=True, atom_loss=False, fileNum='', savefig=False):
     '''
     Fits od images to a gaussian and uses its amplitude to plot the spectrum of the scan
     corresponding to the given frequencies. This is fit to :math:`b_v(\delta)` from Chang Chi's thesis to extract
@@ -139,20 +139,23 @@ def spectroscopyFaddeva(ODimages, f, imaging_params, plot=True, fileNum='', save
     y = y//2
     index = []
     p0 = [1, x, y, x/2, y/2, 0, 0.1]
-    bounds = ([0, x-4, y-4, x/5, y/5, 0, -0.1], [4.5, x+4, y+4, 4*x/5, 4*y/5, 6.28, 0.3])
+    bounds = ([-3, x-4, y-4, x/5, y/5, 0, -0.1], [4.5, x+4, y+4, 4*x/5, 4*y/5, 6.28, 0.3])
     for i in range(n):
         amp, xo, yo, sx, sy, theta, offset = gaussian2DFit(ODimages[i], p0, bounds, plot=False)[0]
         index.append(amp)
-    maxODAt = np.argmax(index)
+    if atom_loss==False:
+        maxODAt = np.argmax(index)
+    else:
+        maxODAt = np.argmin(index)
     try:
         s = imaging_params['saturation']
         amp, xo, yo, sx, sy, theta, offset = gaussian2DFit(ODimages[maxODAt], p0, bounds, plot=False)[0]
-        b = ([min(f), 0.5, 0.01,  0.9*s], [max(f), 300, 7,  1.1*s])
-        pOpt, pCov = bvFit(f, np.array(index), p0=[f[maxODAt], max(index)*10, 2, s], bounds=b)
+        b = ([min(f), 0, 0.01,  0.9*s], [max(f), 300, 8,  1.1*s])
+        pOpt, pCov = bvFit(f, np.array(index), p0=[f[maxODAt], max(index)*10, 5, s], bounds=b)
     except RuntimeError:
         pOpt = [0, 0, 0, 0]
     T = pOpt[2]
-    scat = sigmaRed(0, s=0)
+    scat = sigmaRed(0, pOpt[-1])
     pixelSize = imaging_params['pixelSize']
     magnification = imaging_params['magnification']
     binning = imaging_params['binning']
@@ -183,4 +186,4 @@ def spectroscopyFaddeva(ODimages, f, imaging_params, plot=True, fileNum='', save
         plt.tight_layout()
         if savefig==True:
             plt.savefig('spectroscopy results/SpectroscopyFaddevaResultFor'+fileNum+'.png', transparent=True)
-    return pOpt # f0, b0, vavg
+    return pOpt, index

@@ -4,8 +4,8 @@ from scipy.constants import *
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 
-def gaussian(x, amplitude, xo, sigma, offset):
-    g = offset + amplitude*np.exp(-(x-xo)**2/(2*sigma**2))
+def gaussian(x, amplitude, xo, sigma_x, offset):
+    g = offset + amplitude*np.exp(-(x-xo)**2/(2*sigma_x**2))
     return g
 
 def gaussianFit(x, array, p0=[], bounds=[(), ()], plot=True):
