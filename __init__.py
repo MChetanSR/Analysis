@@ -6,3 +6,4 @@ from .Physics import *
 from .picoMatTools import *
 from .fits import *
 from .jupyterTools import *
+from .rigol import *

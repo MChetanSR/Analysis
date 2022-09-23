@@ -1,6 +1,6 @@
 from multiprocessing import Process
 import numpy as np
-from .ehrenfest_cython import EhrenfestSU2, omegaConstant, omegaRamp, omegaGaussian, Map
+from ehrenfest_cython import EhrenfestSU2, omegaConstant, omegaRamp, omegaGaussian, Map
 import matplotlib.pyplot as  plt
 import time
 import sys
@@ -44,7 +44,7 @@ if __name__=='__main__':
     r = np.loadtxt('Result.txt')
     t_unit = 16.576
     y0 = np.array([0, 0, 0, 0, -1, 0, 0], dtype=float)
-    t_vec = np.linspace(0, 100/t_unit, 400, dtype=float)
+    t_vec = np.linspace(0, 200/t_unit, 400, dtype=float)
     e = EhrenfestSU2(omegaConstant, omegaConstant, omegaRamp, (), (), (t_r/t_unit,))
     P1, P2, P3 = e.bareStatePop2(t_vec, r)
     plt.figure()

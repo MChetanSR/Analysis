@@ -23,6 +23,7 @@ class rcParams():
     def __init__(self):
         with importlib.resources.open_text("analysis", "rcParams.json") as file:
             self.params = json.load(file)
+            #print(os.getcwd())
             file.close()
     def update(self, key, value):
         """
@@ -35,7 +36,7 @@ class rcParams():
                 desired parameter.
             value: value of the parameter to update.
         """
-        with importlib.resources.open_text("analysis", "rcParams.json") as file:
+        with open("analysis/rcParams.json", 'w') as file:
             self.params[key] = value
             json.dump(self.params, file)
             file.close()
@@ -313,6 +314,7 @@ class ShadowImage(object):
 
     def __str__(self):
         return str(self.tags)
+
 
 class FluorescenceImage(object):
     """

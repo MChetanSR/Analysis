@@ -57,7 +57,7 @@ def Ds(p1, p2, p3, p4, p5):
         a tuple of :math:`d_l`, :math:`d_0`, :math:`d_r`, :math:`\\alpha`, :math:`\\beta` and
         state array :math:`|\psi \\rangle`
     '''
-    d0 = np.sqrt(2*p3)
+    d0 = np.sqrt(abs(2*p3))
     dl = np.sqrt(abs(p1+p2-p3/2))
     dr = np.sqrt(abs(p4+p5-p3/2))
     alpha = np.arctan2(np.sqrt(abs(4*p3*(p1+p2-p3/2-(p1-p2)**2))), p1-p2)
