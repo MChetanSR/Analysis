@@ -4,6 +4,7 @@ from PIL import Image
 import matplotlib.pyplot as plt
 from warnings import warn
 from .AndorSifReader import AndorSifFile
+import tifffile
 import json
 import importlib.resources
 from scipy.constants import *
@@ -428,3 +429,18 @@ class FluorescenceImage(object):
     def __str__(self):
         return str(self.tags)
 
+
+class FluorescenceImage2(FluorescenceImage):
+    def __init__(self, filePath):
+        self.filePath = filePath
+        self.ext = os.path.splitext(filePath)[1]
+        if self.ext == '.tif':
+            self.frames = tifffile.imread(filePath)
+            self.tags = {}
+        else:
+            raise IOError('Invalid file!')
+        if self.frames.shape[0] % 2 != 0:
+            warn('Not a valid fluorescence image. \
+                          No. of images in the file is not a multiple of 2.')
+        self.n = self.frames.shape[0] // 2
+        self.im = Image.fromarray(self.frames[0])
